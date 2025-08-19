@@ -1,0 +1,14 @@
+RUN_HEADLESS=true # if false this will open a chrome instance. true will run a headless chrome instance
+
+P1DOKS_EMAIL=
+P1DOKS_PASSWORD=
+
+P1DOKS_SERIES=GT Sprint
+P1DOKS_YEARS=2025
+P1DOKS_SEASONS=3
+P1DOKS_WEEKS=10
+
+G61_TEAMNAME=Your team name
+
+IRACING_DOCUMENTS_PATH=/mnt/c/Users/your user name/OneDrive/Documents/iRacing # Example fromn wsl to host windows machine
+#IRACING_DOCUMENTS_PATH= #leave blank to disable auto copy
