@@ -1,10 +1,10 @@
 import { chromium } from "playwright";
 import "dotenv/config";
 import { downloadSetups } from "./download-setups";
-import { cp } from "fs";
 import { CONFIG } from "./config";
+import { copyFiles } from "./copyFiles";
 
-(async () => {
+export const run = async () => {
   const browser = await chromium.launch({
     headless: process.env.RUN_HEADLESS === "true",
   });
@@ -14,21 +14,14 @@ import { CONFIG } from "./config";
   await downloadSetups(browser, context, page);
 
   if (CONFIG.iracingDocumentsPath !== "") {
-    cp(
-      "./setups",
-      `${CONFIG.iracingDocumentsPath}/setups`,
-      { recursive: true, force: false },
-      (err) => {
-        if (err) {
-          console.error("Error copying setups:", err);
-        } else {
-          console.log("Setups copied successfully.");
-        }
-        process.exit();
-      }
-    );
+    console.log("tried to copy");
+    copyFiles();
   } else {
     console.log("Didn't copy files to iracing folder");
     process.exit();
   }
+};
+
+(async () => {
+  await run();
 })();

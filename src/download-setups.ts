@@ -57,7 +57,7 @@ export const downloadSetups = async (
         "./setups",
         mapCarP1DoksToIracing(details.car),
         `Garage 61 - ${CONFIG.teamName}`,
-        mapSeasonP1DoksToWBR(details.season),
+        `${CONFIG.year} ${mapSeasonP1DoksToWBR(details.season)}`,
         mapTrackP1DoksToWBR(details.track),
         "p1doks"
       );

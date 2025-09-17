@@ -1,5 +1,7 @@
 RUN_HEADLESS=true # if false this will open a chrome instance. true will run a headless chrome instance
 
+YEAR=2025
+
 P1DOKS_EMAIL=
 P1DOKS_PASSWORD=
 

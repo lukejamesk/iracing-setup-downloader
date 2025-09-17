@@ -10,6 +10,7 @@ export const mapCarP1DoksToIracing = (car: string): string => {
     "McLaren 720S GT3 EVO": "mclaren720sgt3",
     "Mercedes-AMG GT3 2020": "mercedesamgevogt3",
     "Porsche 911 GT3 R (992)": "porsche992rgt3",
+    "Aston Martin GT3": "amvantageevogt3",
   };
   return mapping[car] || car;
 };

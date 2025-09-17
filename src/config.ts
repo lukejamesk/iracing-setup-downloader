@@ -7,10 +7,12 @@ type Config = {
   weeks: string[];
   teamName: string;
   iracingDocumentsPath: string;
+  year: string;
 };
 
 export const CONFIG: Config = {
   email: process.env.P1DOKS_EMAIL as string,
+  year: process.env.YEAR as string,
   password: process.env.P1DOKS_PASSWORD as string,
   series: process.env.P1DOKS_SERIES as string,
   teamName: process.env.G61_TEAMNAME as string,

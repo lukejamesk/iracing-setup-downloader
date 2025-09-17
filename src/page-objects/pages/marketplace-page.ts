@@ -20,6 +20,11 @@ export class MarketplacePage extends LoggedInPage {
       hasText: "Apply Filters",
     });
   }
+  get clearFiltersButton(): Locator {
+    return this.page.locator("button", {
+      hasText: "Clear all filters",
+    });
+  }
 
   get selectSeasonsSelector(): SelectorElement {
     return new SelectorElement(
@@ -56,6 +61,9 @@ export class MarketplacePage extends LoggedInPage {
     weeks?: string[];
     seasons?: string[];
   }) {
+    await this.clearFiltersButton.click();
+    await waitFor(500);
+
     if (filter.series) {
       await this.selectSeries(filter.series);
     }
