@@ -5,7 +5,8 @@ export const createMainWindow = (): BrowserWindow => {
   // Create the browser window
   const mainWindow = new BrowserWindow({
     width: 1400,
-    height: 800,
+    height: 950,
+    autoHideMenuBar: true, // Hide the menu bar but keep title bar
     icon: path.join(__dirname, "assets/icon.png"),
     webPreferences: {
       nodeIntegration: false,

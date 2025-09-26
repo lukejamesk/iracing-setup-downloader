@@ -37,6 +37,7 @@ interface Config {
   teamName: string;
   downloadPath: string;
   runHeadless?: boolean;
+  rememberCredentials?: boolean;
 }
 
 const ConfigForm: React.FC = () => {

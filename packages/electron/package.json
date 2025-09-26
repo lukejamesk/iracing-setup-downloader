@@ -9,7 +9,7 @@
     "copy-ui": "powershell -Command \"Copy-Item -Path '../ui/dist' -Destination './ui-dist' -Recurse -Force\"",
     "generate-icons": "node scripts/generate-icons.js",
     "install-playwright": "npx playwright install chromium",
-    "dev": "tsc --watch",
+    "dev": "npm run build:ui && npm run copy-ui && tsc && electron .",
     "start": "npm run copy-ui && npm run build && electron .",
     "clean": "rm -rf dist ui-dist package.prod.json",
     "create-prod-package": "node scripts/create-production-package.js",

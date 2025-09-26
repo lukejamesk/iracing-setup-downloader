@@ -31,6 +31,7 @@ interface Config {
   teamName: string;
   downloadPath: string;
   runHeadless?: boolean;
+  rememberCredentials?: boolean;
 }
 
 interface ConfigFormFieldsProps {
@@ -62,6 +63,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
       teamName: "",
       downloadPath: "",
       runHeadless: true,
+      rememberCredentials: true, // Default to checked
     };
   });
 
@@ -108,13 +110,23 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
 
   // Save config to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("p1doks-config", JSON.stringify(config));
+    const configToSave = {...config};
+    
+    // If rememberCredentials is false, don't save email and password
+    if (!configToSave.rememberCredentials) {
+      configToSave.email = "";
+      configToSave.password = "";
+    }
+    
+    localStorage.setItem("p1doks-config", JSON.stringify(configToSave));
   }, [config]);
 
   const handleInputChange =
     (field: keyof Config) => (event: React.ChangeEvent<HTMLInputElement>) => {
       const value =
-        field === "runHeadless" ? event.target.checked : event.target.value;
+        field === "runHeadless" || field === "rememberCredentials" 
+          ? event.target.checked 
+          : event.target.value;
       setConfig((prev) => ({...prev, [field]: value}));
     };
 
@@ -289,6 +301,20 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
                 onChange={handleInputChange("password")}
                 required
                 variant="outlined"
+              />
+            </Grid>
+
+            {/* Remember Credentials */}
+            <Grid size={{xs: 12}}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={config.rememberCredentials ?? true}
+                    onChange={handleInputChange("rememberCredentials")}
+                    color="primary"
+                  />
+                }
+                label="Remember email and password"
               />
             </Grid>
 
