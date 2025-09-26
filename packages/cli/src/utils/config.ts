@@ -47,6 +47,8 @@ export const getConfig = (options: any): Config => {
     week: options.week || fileConfig?.lastUsed?.week || fileConfig?.week || "",
     teamName: options.team || fileConfig?.teamName || "",
     year: options.year || fileConfig?.lastUsed?.year || fileConfig?.year || "",
+    downloadPath:
+      options.downloadPath || fileConfig?.downloadPath || "./setups",
     runHeadless: options.headless ?? fileConfig?.runHeadless ?? true,
     lastUsed: fileConfig?.lastUsed,
   };

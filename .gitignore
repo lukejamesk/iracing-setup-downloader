@@ -92,3 +92,9 @@ playwright/.cache/
 
 # Downloaded setups
 setups/
+
+# Electron release builds
+packages/electron/release/
+
+# Electron UI dist (copied from UI package)
+packages/electron/ui-dist/

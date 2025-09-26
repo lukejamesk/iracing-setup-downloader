@@ -19,8 +19,8 @@ export const createMainWindow = (): BrowserWindow => {
     mainWindow.loadURL("http://localhost:5173");
     mainWindow.webContents.openDevTools();
   } else {
-    // Load from the UI package
-    mainWindow.loadFile(path.join(__dirname, "../../ui/dist/index.html"));
+    // Load from the copied UI files
+    mainWindow.loadFile(path.join(__dirname, "../ui-dist/index.html"));
   }
 
   return mainWindow;

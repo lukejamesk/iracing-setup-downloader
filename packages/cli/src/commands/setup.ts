@@ -61,6 +61,14 @@ const interactiveSetup = async (customPath?: string): Promise<Config> => {
       validate: (input: string) => input.length > 0 || "Year is required",
     },
     {
+      type: "input",
+      name: "downloadPath",
+      message: "Download path (where to save files):",
+      default: "./setups",
+      validate: (input: string) =>
+        input.length > 0 || "Download path is required",
+    },
+    {
       type: "confirm",
       name: "headless",
       message: "Run in headless mode?",
@@ -78,6 +86,7 @@ const interactiveSetup = async (customPath?: string): Promise<Config> => {
     week: answers.week,
     teamName: answers.team,
     year: answers.year,
+    downloadPath: answers.downloadPath,
     runHeadless: answers.headless,
   };
 
