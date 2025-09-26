@@ -1,6 +1,6 @@
 {
   "name": "@p1doks-downloader/electron",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Electron GUI for P1Doks downloader",
   "main": "dist/main.js",
   "scripts": {
@@ -10,12 +10,13 @@
     "generate-icons": "node scripts/generate-icons.js",
     "dev": "tsc --watch",
     "start": "npm run build && electron .",
-    "clean": "rm -rf dist ui-dist",
-    "pack": "npm run build:ui && npm run copy-ui && npm run build && electron-builder --dir",
-    "dist": "npm run build:ui && npm run copy-ui && npm run build && electron-builder",
-    "dist:mac": "npm run build:ui && npm run copy-ui && npm run build && electron-builder --mac",
-    "dist:win": "npm run build:ui && npm run copy-ui && npm run build && electron-builder --win",
-    "dist:linux": "npm run build:ui && npm run copy-ui && npm run build && electron-builder --linux"
+    "clean": "rm -rf dist ui-dist package.prod.json",
+    "create-prod-package": "node scripts/create-production-package.js",
+    "pack": "npm run build:ui && npm run copy-ui && npm run build && npm run create-prod-package && electron-builder --dir",
+    "dist": "npm run build:ui && npm run copy-ui && npm run build && npm run create-prod-package && electron-builder",
+    "dist:mac": "npm run build:ui && npm run copy-ui && npm run build && npm run create-prod-package && electron-builder --mac",
+    "dist:win": "npm run build:ui && npm run copy-ui && npm run build && npm run create-prod-package && electron-builder --win",
+    "dist:linux": "npm run build:ui && npm run copy-ui && npm run build && npm run create-prod-package && electron-builder --linux"
   },
   "dependencies": {
     "@p1doks-downloader/core": "*"
@@ -52,9 +53,16 @@
     "files": [
       "dist/**/*",
       "ui-dist/**/*",
-      "node_modules/**/*",
-      "package.json"
+      "package.prod.json:package.json"
     ],
+    "asarUnpack": [
+      "node_modules/@p1doks-downloader/core/**/*"
+    ],
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "nodeGypRebuild": false,
+    "buildDependenciesFromSource": false,
+    "npmRebuild": false,
     "mac": {
       "category": "public.app-category.utilities",
       "icon": "dist/assets/icon.icns",
@@ -91,7 +99,9 @@
             "ia32"
           ]
         }
-      ]
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "requestedExecutionLevel": "asInvoker"
     },
     "linux": {
       "target": [

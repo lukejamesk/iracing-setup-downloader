@@ -1,0 +1,9 @@
+{
+  "name": "@p1doks-downloader/electron",
+  "version": "0.0.1",
+  "description": "Electron GUI for P1Doks downloader",
+  "main": "dist/main.js",
+  "dependencies": {
+    "@p1doks-downloader/core": "*"
+  }
+}
