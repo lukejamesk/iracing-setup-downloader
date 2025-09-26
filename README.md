@@ -1,18 +1,18 @@
-# P1Doks Downloader Monorepo
+# P1Doks Downloader
 
-A monorepo containing multiple applications for downloading and managing P1Doks setups for iRacing.
+A Windows desktop application for downloading and managing P1Doks setups for iRacing. Built with Electron and React, providing both a graphical user interface and command-line interface.
 
 ## Packages
 
 - **@p1doks-downloader/core** - Core downloader functionality
 - **@p1doks-downloader/cli** - Command-line interface
-- **@p1doks-downloader/ui** - React web interface (planned)
-- **@p1doks-downloader/electron** - Desktop application (planned)
+- **@p1doks-downloader/electron** - Windows desktop application with integrated React UI
 
 ## Getting Started
 
 ### Prerequisites
 
+- **Windows 10/11** (required)
 - Node.js 18+
 - npm 8+
 
@@ -117,21 +117,11 @@ This means you can:
 - Override specific values: `p1doks download --season 2` (uses last used series, week, year)
 - Always override with full command line options
 
-## Desktop GUI (Electron + UI)
+## Desktop Application (Windows Only)
 
-The project includes a desktop GUI application with separate packages:
+The main application is a Windows desktop app built with Electron and React:
 
-### UI Package (React)
-
-```bash
-# Run the UI development server
-npm run ui
-
-# Build the UI
-npm run build:ui
-```
-
-### Electron Package
+### Running the Desktop App
 
 ```bash
 # Run the desktop application
@@ -141,17 +131,30 @@ npm run electron
 npm run dev:electron
 ```
 
-**Development Workflow:**
+### Development Workflow
+
+**For development with hot reloading (recommended):**
 
 ```bash
 # Terminal 1: Start UI dev server
-npm run ui
+npm run dev:ui
 
-# Terminal 2: Start Electron
+# Terminal 2: Start Electron (will load from dev server if running)
 npm run dev:electron
 ```
 
-The Electron app loads the React UI package, providing a graphical interface for the same functionality available in the CLI.
+**For simple development (no hot reloading):**
+
+```bash
+# Builds UI once and starts Electron
+npm run dev:electron
+```
+
+The Electron app provides a modern graphical interface for downloading P1Doks setups, with features like:
+- Interactive configuration form
+- Real-time download progress
+- Download history and logs
+- Automatic credential management
 
 ## Project Structure
 
@@ -159,8 +162,11 @@ The Electron app loads the React UI package, providing a graphical interface for
 ├── packages/
 │   ├── core/           # Core downloader functionality
 │   ├── cli/            # CLI application
-│   ├── ui/             # React UI package
-│   └── electron/       # Desktop application wrapper (Electron)
+│   └── electron/       # Desktop application with integrated React UI
+│       ├── src/
+│       │   ├── ui/     # React UI components and pages
+│       │   └── ...     # Electron main process files
+│       └── ui-dist/    # Built UI files
 ├── package.json        # Root workspace configuration
 └── README.md
 ```

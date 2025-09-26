@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react";
+import React from "react";
 import {
   Box,
   Paper,
@@ -6,11 +6,12 @@ import {
   List,
   ListItem,
   ListItemText,
-  Chip,
   Divider,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
-import {CheckCircle, Info, Error} from "@mui/icons-material";
+import {CheckCircle, Info, Error, Close} from "@mui/icons-material";
+import { useAutoScroll } from "../hooks/useAutoScroll";
 
 export interface LogEntry {
   type: "info" | "success" | "error";
@@ -21,21 +22,15 @@ export interface LogEntry {
 interface DownloadLogProps {
   logs: LogEntry[];
   isDownloading?: boolean;
+  onClose?: () => void;
 }
 
 const DownloadLog: React.FC<DownloadLogProps> = ({
   logs,
   isDownloading = false,
+  onClose,
 }) => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to bottom when new logs are added
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      const scrollContainer = scrollContainerRef.current;
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
-    }
-  }, [logs]);
+  const { scrollContainerRef, handleScroll } = useAutoScroll([logs], { threshold: 5 });
 
   const getIcon = (type: LogEntry["type"]) => {
     switch (type) {
@@ -48,16 +43,6 @@ const DownloadLog: React.FC<DownloadLogProps> = ({
     }
   };
 
-  const getChipColor = (type: LogEntry["type"]) => {
-    switch (type) {
-      case "success":
-        return "success";
-      case "error":
-        return "error";
-      default:
-        return "info";
-    }
-  };
 
   const formatTime = (timestamp: Date) => {
     return timestamp.toLocaleTimeString();
@@ -76,13 +61,19 @@ const DownloadLog: React.FC<DownloadLogProps> = ({
         overflow: "hidden",
       }}
     >
-      <Box sx={{p: 2, borderBottom: 1, borderColor: "divider"}}>
+      <Box sx={{p: 2, borderBottom: 1, borderColor: "divider", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
         <Typography variant="h6" component="h3">
           Download Log
         </Typography>
+        {onClose && (
+          <IconButton onClick={onClose} size="small" sx={{color: "white"}}>
+            <Close />
+          </IconButton>
+        )}
       </Box>
       <Box
         ref={scrollContainerRef}
+        onScroll={handleScroll}
         sx={{
           flex: 1,
           overflow: "auto",
@@ -131,22 +122,14 @@ const DownloadLog: React.FC<DownloadLogProps> = ({
                   </Box>
                   <ListItemText
                     primary={
-                      <Box sx={{display: "flex", alignItems: "center", gap: 1}}>
-                        <Typography variant="body2" component="span">
+                      <Box>
+                        <Typography variant="body2" component="div">
                           {log.message}
                         </Typography>
-                        <Chip
-                          label={log.type}
-                          size="small"
-                          color={getChipColor(log.type) as any}
-                          variant="outlined"
-                        />
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                          {formatTime(log.timestamp)}
+                        </Typography>
                       </Box>
-                    }
-                    secondary={
-                      <Typography variant="caption" color="text.secondary">
-                        {formatTime(log.timestamp)}
-                      </Typography>
                     }
                   />
                 </ListItem>

@@ -1,4 +1,4 @@
-import {BrowserWindow} from "electron";
+import {BrowserWindow, app} from "electron";
 import * as path from "path";
 
 export const createMainWindow = (): BrowserWindow => {
@@ -16,12 +16,23 @@ export const createMainWindow = (): BrowserWindow => {
   });
 
   // Load the app
-  if (process.env.NODE_ENV === "development") {
-    mainWindow.loadURL("http://localhost:5173");
+  // Always try dev server first in development, fallback to built files
+  console.log("Attempting to load from dev server: http://localhost:5173");
+  mainWindow.loadURL("http://localhost:5173").then(() => {
+    console.log("Successfully loaded from dev server on port 5173");
+  }).catch(() => {
+    console.log("Port 5173 not available, trying port 5174");
+    mainWindow.loadURL("http://localhost:5174").then(() => {
+      console.log("Successfully loaded from dev server on port 5174");
+    }).catch((error) => {
+      console.log("Dev server not running, loading from built files. Error:", error.message);
+      mainWindow.loadFile(path.join(__dirname, "../ui-dist/index.html"));
+    });
+  });
+  
+  // Open dev tools in development
+  if (process.env.NODE_ENV === "development" || !app.isPackaged) {
     mainWindow.webContents.openDevTools();
-  } else {
-    // Load from the copied UI files
-    mainWindow.loadFile(path.join(__dirname, "../ui-dist/index.html"));
   }
 
   return mainWindow;

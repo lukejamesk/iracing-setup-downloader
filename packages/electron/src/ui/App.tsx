@@ -1,6 +1,8 @@
 import React from "react";
-import {ThemeProvider, createTheme, CssBaseline} from "@mui/material";
+import {ThemeProvider, createTheme, CssBaseline, Box} from "@mui/material";
 import ConfigForm from "./components/ConfigForm";
+import backgroundImage from "./racing-cars-background.png";
+import "./index.css";
 
 const theme = createTheme({
   palette: {
@@ -120,6 +122,31 @@ const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Box
+        sx={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          zIndex: -1,
+        }}
+      />
+      <Box
+        sx={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4))",
+          zIndex: -1,
+        }}
+      />
       <ConfigForm />
     </ThemeProvider>
   );

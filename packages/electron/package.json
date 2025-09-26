@@ -4,16 +4,17 @@
   "description": "Electron GUI for P1Doks downloader",
   "main": "dist/main.js",
   "scripts": {
-    "build": "npm run generate-icons && npm run install-playwright && tsc",
-    "build:ui": "npm run build --workspace=@p1doks-downloader/ui",
-    "copy-ui": "powershell -Command \"Copy-Item -Path '../ui/dist' -Destination './ui-dist' -Recurse -Force\"",
+    "build": "npm run generate-icons && npm run install-playwright && npm run build:ui && tsc",
+    "build:ui": "vite build --config src/ui/vite.config.ts",
+    "dev:ui": "vite --config src/ui/vite.config.ts",
     "generate-icons": "node scripts/generate-icons.js",
     "install-playwright": "npx playwright install chromium",
-    "dev": "npm run build:ui && npm run copy-ui && tsc && electron .",
-    "start": "npm run copy-ui && npm run build && electron .",
+    "dev": "npm run build:ui && tsc && electron .",
+    "dev:electron-only": "tsc && electron .",
+    "start": "npm run build && electron .",
     "clean": "rm -rf dist ui-dist package.prod.json",
     "create-prod-package": "node scripts/create-production-package.js",
-    "dist": "npm run build:ui && npm run copy-ui && npm run build && npm run create-prod-package && electron-builder --win"
+    "dist": "npm run build && npm run create-prod-package && electron-builder --win"
   },
   "dependencies": {
     "@p1doks-downloader/core": "*",
@@ -21,11 +22,21 @@
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
     "electron": "32.0.0",
     "electron-builder": "26.0.12",
     "png-to-ico": "3.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@mui/material": "^6.1.6",
+    "@mui/icons-material": "^6.1.6",
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
     "sharp": "0.34.4",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vite": "^6.0.1"
   },
   "files": [
     "dist",
@@ -51,7 +62,16 @@
     "files": [
       "dist/**/*",
       "ui-dist/**/*",
-      "package.prod.json:package.json"
+      "package.prod.json:package.json",
+      "!node_modules/@mui/**/*",
+      "!node_modules/@emotion/**/*",
+      "!node_modules/react/**/*",
+      "!node_modules/react-dom/**/*",
+      "!node_modules/@types/react/**/*",
+      "!node_modules/@types/react-dom/**/*",
+      "!node_modules/@vitejs/**/*",
+      "!node_modules/vite/**/*",
+      "!src/ui/**/*"
     ],
     "asarUnpack": [
       "node_modules/@p1doks-downloader/core/**/*",

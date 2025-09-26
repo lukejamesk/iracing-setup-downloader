@@ -18,6 +18,7 @@ import {
   Download as DownloadIcon,
   Cancel as CancelIcon,
   FolderOpen as FolderIcon,
+  Flag as FlagIcon,
 } from "@mui/icons-material";
 import HistoryAutocomplete from "./HistoryAutocomplete";
 
@@ -219,15 +220,8 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
       }
 
       const result = await onDownload(config);
-      // Only show success message if download actually completed (not cancelled)
-      if (result.completed) {
-        setMessage({type: "success", text: "Download completed successfully!"});
-      }
     } catch (error) {
-      setMessage({
-        type: "error",
-        text: error instanceof Error ? error.message : "Download failed",
-      });
+      // Error handling is now done in ConfigForm with toasters
     } finally {
       setIsLoading(false);
     }
@@ -248,8 +242,8 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
     >
       <Box sx={{p: 2, borderBottom: 1, borderColor: "divider"}}>
         <Typography variant="h6" component="h3">
-          Configure your download settings
-        </Typography>
+          Configure your download settings  
+        </Typography>  
       </Box>
 
       <Box
@@ -261,11 +255,6 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
           padding: 4,
         }}
       >
-        {message && (
-          <Alert severity={message.type} sx={{mb: 3}}>
-            {message.text}
-          </Alert>
-        )}
 
         <form
           onSubmit={handleSubmit}
@@ -349,7 +338,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
             </Grid>
 
             {/* Series */}
-            <Grid size={{xs: 12, sm: 6}}>
+            <Grid size={{xs: 12}}>
               <HistoryAutocomplete
                 label="Series"
                 placeholder="e.g., GT Sprint"
@@ -373,27 +362,43 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
             </Grid>
 
             {/* Team Name */}
-            <Grid size={{xs: 12, sm: 6}}>
-              <HistoryAutocomplete
-                label="Team Name"
-                placeholder="e.g., Garage 61 - LK Racing"
-                value={config.teamName}
-                history={teamNameHistory}
-                onChange={handleTeamNameChange}
-                onInputChange={(newInputValue) => {
-                  setConfig((prev) => ({
-                    ...prev,
-                    teamName: newInputValue,
-                  }));
-                }}
-                onBlur={() => {
-                  if (config.teamName) {
-                    addToTeamNameHistory(config.teamName);
-                  }
-                }}
-                onRemoveFromHistory={removeFromTeamNameHistory}
-                required
-              />
+            <Grid size={{xs: 12}}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mr: 1, 
+                    color: 'white',
+                    fontWeight: 'bold',
+                    minWidth: 'fit-content',
+                    lineHeight: 1.5
+                  }}
+                >
+                  Garage 61 - 
+                </Typography>
+                <Box sx={{ flex: 1 }}>
+                  <HistoryAutocomplete
+                    label="Team Name"
+                    placeholder="e.g., LK Racing"
+                    value={config.teamName}
+                    history={teamNameHistory}
+                    onChange={handleTeamNameChange}
+                    onInputChange={(newInputValue) => {
+                      setConfig((prev) => ({
+                        ...prev,
+                        teamName: newInputValue,
+                      }));
+                    }}
+                    onBlur={() => {
+                      if (config.teamName) {
+                        addToTeamNameHistory(config.teamName);
+                      }
+                    }}
+                    onRemoveFromHistory={removeFromTeamNameHistory}
+                    required
+                  />
+                </Box>
+              </Box>
             </Grid>
 
             {/* Season */}
@@ -508,7 +513,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
                 type="submit"
                 variant="contained"
                 size="large"
-                startIcon={<DownloadIcon />}
+                startIcon={<FlagIcon />}
                 sx={{minWidth: 200}}
               >
                 Download Setups
@@ -517,6 +522,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
           </Box>
         </form>
       </Box>
+
     </Paper>
   );
 };

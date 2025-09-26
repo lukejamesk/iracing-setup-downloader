@@ -1,9 +1,8 @@
 import React, {useState} from "react";
-import {Box, Typography} from "@mui/material";
+import {Box, Typography, Snackbar, Alert} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import DownloadLog, {LogEntry} from "./DownloadLog";
 import ConfigFormFields from "./ConfigFormFields";
-import {runDownloadSimulation} from "@p1doks-downloader/core-simulation";
 
 // Declare the electronAPI interface for TypeScript
 declare global {
@@ -43,11 +42,21 @@ interface Config {
 const ConfigForm: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showLogPanel, setShowLogPanel] = useState(false);
   const [cancelController, setCancelController] =
     useState<AbortController | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
   const addLog = (type: LogEntry["type"], message: string) => {
     setLogs((prev) => [...prev, {type, message, timestamp: new Date()}]);
+  };
+
+  const showToaster = (message: string, severity: "success" | "error") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
   };
 
   const handleDownload = async (
@@ -55,6 +64,7 @@ const ConfigForm: React.FC = () => {
   ): Promise<{completed: boolean}> => {
     setLogs([]); // Clear previous logs
     setIsDownloading(true);
+    setShowLogPanel(true);
 
     const controller = new AbortController();
     setCancelController(controller);
@@ -87,32 +97,23 @@ const ConfigForm: React.FC = () => {
         // Only show success message if it actually completed (not cancelled)
         if (result.completed) {
           addLog("success", "Download completed successfully!");
+          showToaster("Download completed successfully!", "success");
           return {completed: true};
         } else {
           return {completed: false};
         }
       } else {
-        // Use core-simulation package for browser simulation
-        await runDownloadSimulation(
-          config,
-          (progress: LogEntry) => {
-            if (!controller.signal.aborted) {
-              addLog(progress.type, progress.message);
-            }
-          },
-          controller.signal
-        );
-        return {completed: true};
+        // Browser simulation not available - require Electron
+        throw new Error("This application requires Electron to run. Please use the desktop version.");
       }
     } catch (error) {
       if (error instanceof Error && error.message === "Download cancelled") {
         addLog("info", "Download cancelled by user");
         return {completed: false};
       } else {
-        addLog(
-          "error",
-          error instanceof Error ? error.message : "Download failed"
-        );
+        const errorMessage = error instanceof Error ? error.message : "Download failed";
+        addLog("error", errorMessage);
+        showToaster(errorMessage, "error");
         return {completed: false};
       }
     } finally {
@@ -142,6 +143,8 @@ const ConfigForm: React.FC = () => {
     } else {
       addLog("error", "No active download to cancel");
     }
+    // Hide log panel when cancelled
+    setShowLogPanel(false);
   };
 
   return (
@@ -182,12 +185,43 @@ const ConfigForm: React.FC = () => {
             onCancel={handleCancel}
           />
         </Grid>
-        {isDownloading && (
+        {showLogPanel && (
           <Grid size={{xs: 12, md: 6}} sx={{display: "flex"}}>
-            <DownloadLog logs={logs} isDownloading={isDownloading} />
+            <DownloadLog 
+              logs={logs} 
+              isDownloading={isDownloading} 
+              onClose={() => setShowLogPanel(false)}
+            />
           </Grid>
         )}
       </Grid>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{
+          position: 'fixed',
+          bottom: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 9999,
+        }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ 
+            width: 'auto',
+            minWidth: '300px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
