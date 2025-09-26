@@ -25,11 +25,7 @@
     "cli": "npm run start --workspace=@p1doks-downloader/cli --",
     "ui": "npm run dev --workspace=@p1doks-downloader/ui",
     "electron": "npm run start --workspace=@p1doks-downloader/electron",
-    "pack:electron": "npm run pack --workspace=@p1doks-downloader/electron",
-    "dist:electron": "npm run dist --workspace=@p1doks-downloader/electron",
-    "dist:electron:mac": "npm run dist:mac --workspace=@p1doks-downloader/electron",
-    "dist:electron:win": "npm run dist:win --workspace=@p1doks-downloader/electron",
-    "dist:electron:linux": "npm run dist:linux --workspace=@p1doks-downloader/electron"
+    "dist:electron": "npm run dist --workspace=@p1doks-downloader/electron"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

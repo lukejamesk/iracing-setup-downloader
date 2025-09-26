@@ -1,10 +1,11 @@
 import {ipcMain, dialog, BrowserWindow} from "electron";
 import {runDownload, Config, DownloadProgress} from "@p1doks-downloader/core";
+import {Browser} from "playwright-core";
 
 // Store active download controllers and browser instances by sender ID
 const activeDownloads = new Map<
   number,
-  {controller: AbortController; browser?: any}
+  {controller: AbortController; browser?: Browser}
 >();
 
 export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
@@ -27,7 +28,7 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
           event.sender.send("download-progress", progress);
         },
         controller.signal,
-        (browser) => {
+        (browser: Browser) => {
           // Store the browser instance for forceful termination
           const downloadInfo = activeDownloads.get(senderId);
           if (downloadInfo) {

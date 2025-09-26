@@ -8,9 +8,23 @@ export const runDownload = async (
   signal?: AbortSignal,
   onBrowserCreated?: (browser: any) => void
 ) => {
-  const browser = await chromium.launch({
-    headless: config.runHeadless ?? true,
-  });
+  // Launch system Chrome
+  let browser;
+  try {
+    console.log("Launching system Chrome...");
+    browser = await chromium.launch({
+      headless: config.runHeadless ?? true,
+      channel: "chrome", // This tells Playwright to use the system's Chrome
+    });
+    console.log("Chrome launched successfully");
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      "Chrome not found. Please install Google Chrome to use this application.\n\n" +
+      `Error: ${errorMessage}\n\n` +
+      "Download Chrome from: https://www.google.com/chrome/"
+    );
+  }
 
   // Notify the caller that browser is created
   if (onBrowserCreated) {
