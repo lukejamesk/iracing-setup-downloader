@@ -4,7 +4,8 @@
   "description": "Electron GUI for P1Doks downloader",
   "main": "dist/main.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run generate-icons && tsc",
+    "generate-icons": "node scripts/generate-icons.js",
     "dev": "tsc --watch",
     "start": "npm run build && electron .",
     "clean": "rm -rf dist"
@@ -15,10 +16,12 @@
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
+    "sharp": "0.34.4",
     "typescript": "^5.9.2"
   },
   "files": [
     "dist",
+    "src/assets",
     "README.md"
   ],
   "keywords": [

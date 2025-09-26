@@ -1,0 +1,43 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Deep blue background -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Vibrant yellow download icon -->
+    <linearGradient id="downloadGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Vibrant yellow P1 text -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Strong shadow for contrast -->
+    <filter id="strongShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+  
+  <!-- Full background -->
+  <rect width="256" height="256" fill="url(#bgGradient)"/>
+  
+  <!-- Large P1 Text - moved down to be closer -->
+  <text x="128" y="120" font-family="system-ui, -apple-system, sans-serif" font-size="80" font-weight="900" 
+        text-anchor="middle" fill="url(#textGradient)" filter="url(#strongShadow)">P1</text>
+  
+  <!-- Large download icon - moved up to be closer -->
+  <g transform="translate(128, 160)">
+    <!-- Large download arrow -->
+    <path d="M -40 -30 L 40 -30 L 40 -15 L 60 -15 L 30 25 L 0 25 L -30 25 L -60 -15 L -40 -15 Z" 
+          fill="url(#downloadGradient)" filter="url(#strongShadow)"/>
+    
+    <!-- Large download line -->
+    <rect x="-50" y="35" width="100" height="8" fill="url(#downloadGradient)" rx="4" filter="url(#strongShadow)"/>
+  </g>
+</svg>
