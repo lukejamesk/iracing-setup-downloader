@@ -8,6 +8,11 @@ const activeDownloads = new Map<
 >();
 
 export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
+  // Remove existing handlers to prevent duplicate registration
+  ipcMain.removeAllListeners("download-setups");
+  ipcMain.removeAllListeners("cancel-download");
+  ipcMain.removeAllListeners("select-folder");
+
   // IPC handler for download functionality
   ipcMain.handle("download-setups", async (event, config: Config) => {
     const senderId = event.sender.id;

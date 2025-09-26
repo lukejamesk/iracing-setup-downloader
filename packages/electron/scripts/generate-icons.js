@@ -31,7 +31,8 @@ const generateIcons = async () => {
       .png()
       .toFile(path.join(distDir, "icon.png"));
 
-    // Create ICO file for Windows
+    // Create ICO file for Windows - use PNG format but with .ico extension
+    // This is a workaround since Sharp doesn't support ICO format directly
     await sharp(svgBuffer)
       .resize(256, 256)
       .png()
