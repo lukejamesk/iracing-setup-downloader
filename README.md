@@ -117,14 +117,50 @@ This means you can:
 - Override specific values: `p1doks download --season 2` (uses last used series, week, year)
 - Always override with full command line options
 
+## Desktop GUI (Electron + UI)
+
+The project includes a desktop GUI application with separate packages:
+
+### UI Package (React)
+
+```bash
+# Run the UI development server
+npm run ui
+
+# Build the UI
+npm run build:ui
+```
+
+### Electron Package
+
+```bash
+# Run the desktop application
+npm run electron
+
+# Run in development mode (requires UI dev server)
+npm run dev:electron
+```
+
+**Development Workflow:**
+
+```bash
+# Terminal 1: Start UI dev server
+npm run ui
+
+# Terminal 2: Start Electron
+npm run dev:electron
+```
+
+The Electron app loads the React UI package, providing a graphical interface for the same functionality available in the CLI.
+
 ## Project Structure
 
 ```
 ├── packages/
 │   ├── core/           # Core downloader functionality
 │   ├── cli/            # CLI application
-│   ├── ui/             # React web interface (planned)
-│   └── electron/       # Desktop application (planned)
+│   ├── ui/             # React UI package
+│   └── electron/       # Desktop application wrapper (Electron)
 ├── package.json        # Root workspace configuration
 └── README.md
 ```

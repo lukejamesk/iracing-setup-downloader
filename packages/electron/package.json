@@ -1,0 +1,34 @@
+{
+  "name": "@p1doks-downloader/electron",
+  "version": "1.0.0",
+  "description": "Electron GUI for P1Doks downloader",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "npm run build && electron .",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@p1doks-downloader/core": "*",
+    "electron": "^32.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "p1doks",
+    "iracing",
+    "setup",
+    "downloader",
+    "electron",
+    "gui"
+  ],
+  "author": "",
+  "license": "ISC"
+}

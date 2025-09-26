@@ -11,18 +11,79 @@ import {
   mapTrackP1DoksToWBR,
 } from "./mappers";
 
+export interface DownloadProgress {
+  type: "info" | "success" | "error";
+  message: string;
+  timestamp: Date;
+}
+
+// Helper function to check if operation was cancelled
+const checkCancellation = (signal?: AbortSignal) => {
+  if (signal?.aborted) {
+    throw new Error("Download cancelled");
+  }
+};
+
+// Helper function to safely execute Playwright operations
+const safePlaywrightOperation = async <T>(
+  operation: () => Promise<T>,
+  signal?: AbortSignal
+): Promise<T> => {
+  try {
+    checkCancellation(signal);
+    return await operation();
+  } catch (error) {
+    // If cancelled, throw cancellation error instead of Playwright error
+    if (signal?.aborted) {
+      throw new Error("Download cancelled");
+    }
+    throw error;
+  }
+};
+
 export const downloadSetups = async (
   browser: Browser,
   context: BrowserContext,
   page: Page,
-  config: Config
+  config: Config,
+  onProgress?: (progress: DownloadProgress) => void,
+  signal?: AbortSignal
 ) => {
-  await page.goto("https://p1doks.com/");
+  // Check for cancellation before starting
+  checkCancellation(signal);
+
+  await safePlaywrightOperation(() => page.goto("https://p1doks.com/"), signal);
+
+  // Check for cancellation after page load
+  checkCancellation(signal);
+
+  // Add a small delay to make cancellation testing easier
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Check for cancellation after delay
+  checkCancellation(signal);
 
   console.log("BEGIN Login");
-  const homePage = new HomePage(page);
-  const loginPage = homePage.clickLogin();
-  const marketplacePage = await loginPage.login(config.email, config.password);
+  onProgress?.({
+    type: "info",
+    message: "Starting login process...",
+    timestamp: new Date(),
+  });
+
+  const marketplacePage = await safePlaywrightOperation(async () => {
+    const homePage = new HomePage(page);
+    const loginPage = homePage.clickLogin();
+    return await loginPage.login(config.email, config.password);
+  }, signal);
+
+  // Check for cancellation after login
+  checkCancellation(signal);
+
+  onProgress?.({
+    type: "success",
+    message: "Login successful!",
+    timestamp: new Date(),
+  });
   console.log("END Login");
 
   const filter = {
@@ -32,13 +93,43 @@ export const downloadSetups = async (
     years: [config.year],
   };
   console.log("BEGIN Filter", filter);
+  onProgress?.({
+    type: "info",
+    message: `Applying filters: ${config.series} - Season ${config.season}, Week ${config.week}, ${config.year}`,
+    timestamp: new Date(),
+  });
   await marketplacePage.selectFilter(filter);
+  onProgress?.({
+    type: "success",
+    message: "Filters applied successfully!",
+    timestamp: new Date(),
+  });
   console.log("END Filter");
 
+  onProgress?.({
+    type: "info",
+    message: "Searching for setup cards...",
+    timestamp: new Date(),
+  });
   const cards = await marketplacePage.getCards();
+  onProgress?.({
+    type: "info",
+    message: `Found ${cards.length} setup cards`,
+    timestamp: new Date(),
+  });
 
   for (const card of cards) {
+    // Check for cancellation before processing each card
+    if (signal?.aborted) {
+      throw new Error("Download cancelled");
+    }
+
     const details = await card.getDetails();
+    onProgress?.({
+      type: "info",
+      message: `Processing: ${details.car} at ${details.track}`,
+      timestamp: new Date(),
+    });
 
     const secondPage = await context.newPage();
     await secondPage.goto(details.url);
@@ -48,15 +139,32 @@ export const downloadSetups = async (
     await waitFor(500);
 
     const setupBoxes = await setupPage.getSetupBoxes();
+    onProgress?.({
+      type: "info",
+      message: `Found ${setupBoxes.length} setup files for ${details.car}`,
+      timestamp: new Date(),
+    });
 
     for (const box of setupBoxes) {
+      // Check for cancellation before downloading each file
+      if (signal?.aborted) {
+        await secondPage.close();
+        throw new Error("Download cancelled");
+      }
+
       const downloadPromise = secondPage.waitForEvent("download");
       await box.download();
 
       const download = await downloadPromise;
+      const filename = download.suggestedFilename();
+      onProgress?.({
+        type: "info",
+        message: `Downloading: ${filename}`,
+        timestamp: new Date(),
+      });
 
       const folder = path.join(
-        "./setups",
+        config.downloadPath,
         mapCarP1DoksToIracing(details.car),
         `Garage 61 - ${config.teamName}`,
         `${config.year} ${mapSeasonP1DoksToWBR(details.season)}`,
@@ -64,10 +172,15 @@ export const downloadSetups = async (
         "p1doks"
       );
       fs.mkdirSync(folder, {recursive: true});
-      const filePath = path.join(folder, download.suggestedFilename());
+      const filePath = path.join(folder, filename);
       await download.saveAs(filePath);
 
-      console.log(`Saved ${download.suggestedFilename()} to ${filePath}`);
+      onProgress?.({
+        type: "success",
+        message: `Saved: ${filename}`,
+        timestamp: new Date(),
+      });
+      console.log(`Saved ${filename} to ${filePath}`);
 
       await waitFor(250);
     }
@@ -75,5 +188,19 @@ export const downloadSetups = async (
     await secondPage.close();
   }
 
+  // Only show completion message if not cancelled
+  if (!signal?.aborted) {
+    // Add a small delay to ensure cancellation is processed
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Final cancellation check
+    if (!signal?.aborted) {
+      onProgress?.({
+        type: "success",
+        message: "Download process completed!",
+        timestamp: new Date(),
+      });
+    }
+  }
   await browser.close();
 };

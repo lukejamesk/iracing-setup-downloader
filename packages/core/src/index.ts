@@ -1,5 +1,5 @@
 // Core P1Doks downloader functionality
-export {downloadSetups} from "./download-setups";
+export {downloadSetups, DownloadProgress} from "./download-setups";
 export {Config} from "./config";
 export {runDownload} from "./download";
 

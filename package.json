@@ -9,14 +9,22 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "build:core": "npm run build --workspace=@p1doks-downloader/core",
+    "build:core-simulation": "npm run build --workspace=@p1doks-downloader/core-simulation",
     "build:cli": "npm run build --workspace=@p1doks-downloader/cli",
+    "build:ui": "npm run build --workspace=@p1doks-downloader/ui",
+    "build:electron": "npm run build --workspace=@p1doks-downloader/electron",
     "clean": "npm run clean --workspaces && rm -rf node_modules",
     "clean:all": "rm -rf node_modules packages/*/node_modules packages/*/dist",
     "install:all": "npm install",
     "test": "npm run test --workspaces",
     "dev:core": "npm run dev --workspace=@p1doks-downloader/core",
+    "dev:core-simulation": "npm run dev --workspace=@p1doks-downloader/core-simulation",
     "dev:cli": "npm run dev --workspace=@p1doks-downloader/cli",
-    "cli": "npm run start --workspace=@p1doks-downloader/cli --"
+    "dev:ui": "npm run dev --workspace=@p1doks-downloader/ui",
+    "dev:electron": "npm run dev --workspace=@p1doks-downloader/electron",
+    "cli": "npm run start --workspace=@p1doks-downloader/cli --",
+    "ui": "npm run dev --workspace=@p1doks-downloader/ui",
+    "electron": "npm run start --workspace=@p1doks-downloader/electron"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

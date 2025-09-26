@@ -1,4 +1,10 @@
-export type Config = {
+export interface DownloadProgress {
+  type: "info" | "success" | "error";
+  message: string;
+  timestamp: Date;
+}
+
+export interface Config {
   email: string;
   password: string;
   series: string;
@@ -8,11 +14,4 @@ export type Config = {
   teamName: string;
   downloadPath: string;
   runHeadless?: boolean;
-  // Last used values for convenience
-  lastUsed?: {
-    series?: string;
-    season?: string;
-    week?: string;
-    year?: string;
-  };
-};
+}
