@@ -1,8 +1,8 @@
-import { Locator, Page } from "playwright-core";
-import { LoggedInPage } from "./loggedin-page";
-import { load, waitFor } from "../../util";
-import { SelectorElement } from "../elements";
-import { SetupCardElement } from "../elements/setup-card";
+import {Locator, Page} from "playwright-core";
+import {LoggedInPage} from "./loggedin-page";
+import {load, waitFor} from "../../util";
+import {SelectorElement} from "../elements";
+import {SetupCardElement} from "../elements/setup-card";
 
 export class MarketplacePage extends LoggedInPage {
   get seriesButtons(): Locator {
@@ -26,6 +26,12 @@ export class MarketplacePage extends LoggedInPage {
     });
   }
 
+  get selectYearsSelector(): SelectorElement {
+    return new SelectorElement(
+      this.page,
+      this.page.locator("[role=dialog] [data-slot=popover-trigger]").nth(0)
+    );
+  }
   get selectSeasonsSelector(): SelectorElement {
     return new SelectorElement(
       this.page,
@@ -71,6 +77,9 @@ export class MarketplacePage extends LoggedInPage {
     await waitFor(500);
     await this.filterButton.click();
 
+    await waitFor(500);
+
+    await this.selectYearsSelector.select(filter.years || []);
     await waitFor(500);
 
     await this.selectSeasonsSelector.select(filter.seasons || []);

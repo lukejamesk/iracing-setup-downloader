@@ -1,0 +1,38 @@
+{
+  "name": "@p1doks-downloader/cli",
+  "version": "1.0.0",
+  "description": "Command-line interface for P1Doks downloader",
+  "main": "dist/index.js",
+  "bin": {
+    "p1doks": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "dev": "tsc --watch",
+    "start": "npm run build && node dist/index.js"
+  },
+  "dependencies": {
+    "@p1doks-downloader/core": "*",
+    "commander": "^12.0.0",
+    "inquirer": "^8.2.6"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^8.2.10",
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "p1doks",
+    "iracing",
+    "setup",
+    "downloader",
+    "cli"
+  ],
+  "author": "",
+  "license": "ISC"
+}

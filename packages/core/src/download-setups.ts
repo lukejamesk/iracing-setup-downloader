@@ -1,8 +1,8 @@
-import { Browser, BrowserContext, Page } from "playwright-core";
-import { HomePage } from "./page-objects/pages/home-page";
-import { CONFIG } from "./config";
-import { load, waitFor } from "./util";
-import { SetupPage } from "./page-objects/pages/setup-page";
+import {Browser, BrowserContext, Page} from "playwright-core";
+import {HomePage} from "./page-objects/pages/home-page";
+import {Config} from "./config";
+import {load, waitFor} from "./util";
+import {SetupPage} from "./page-objects/pages/setup-page";
 import path from "path";
 import fs from "fs";
 import {
@@ -14,20 +14,22 @@ import {
 export const downloadSetups = async (
   browser: Browser,
   context: BrowserContext,
-  page: Page
+  page: Page,
+  config: Config
 ) => {
   await page.goto("https://p1doks.com/");
 
   console.log("BEGIN Login");
   const homePage = new HomePage(page);
   const loginPage = homePage.clickLogin();
-  const marketplacePage = await loginPage.login(CONFIG.email, CONFIG.password);
+  const marketplacePage = await loginPage.login(config.email, config.password);
   console.log("END Login");
 
   const filter = {
-    series: CONFIG.series,
-    seasons: CONFIG.seasons,
-    weeks: CONFIG.weeks,
+    series: config.series,
+    seasons: [config.season],
+    weeks: [config.week],
+    years: [config.year],
   };
   console.log("BEGIN Filter", filter);
   await marketplacePage.selectFilter(filter);
@@ -56,12 +58,12 @@ export const downloadSetups = async (
       const folder = path.join(
         "./setups",
         mapCarP1DoksToIracing(details.car),
-        `Garage 61 - ${CONFIG.teamName}`,
-        `${CONFIG.year} ${mapSeasonP1DoksToWBR(details.season)}`,
+        `Garage 61 - ${config.teamName}`,
+        `${config.year} ${mapSeasonP1DoksToWBR(details.season)}`,
         mapTrackP1DoksToWBR(details.track),
         "p1doks"
       );
-      fs.mkdirSync(folder, { recursive: true });
+      fs.mkdirSync(folder, {recursive: true});
       const filePath = path.join(folder, download.suggestedFilename());
       await download.saveAs(filePath);
 

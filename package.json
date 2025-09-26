@@ -1,25 +1,30 @@
 {
-  "name": "p1doks-downloader",
+  "name": "p1doks-downloader-monorepo",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "P1Doks downloader monorepo with CLI, UI, and Electron apps",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "start": "npm run build && node dist/index.js",
-    "copy": "npm run build && node dist/copy.js"
+    "build": "npm run build --workspaces",
+    "build:core": "npm run build --workspace=@p1doks-downloader/core",
+    "build:cli": "npm run build --workspace=@p1doks-downloader/cli",
+    "clean": "npm run clean --workspaces && rm -rf node_modules",
+    "clean:all": "rm -rf node_modules packages/*/node_modules packages/*/dist",
+    "install:all": "npm install",
+    "test": "npm run test --workspaces",
+    "dev:core": "npm run dev --workspace=@p1doks-downloader/core",
+    "dev:cli": "npm run dev --workspace=@p1doks-downloader/cli",
+    "cli": "npm run start --workspace=@p1doks-downloader/cli --"
   },
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "@playwright/browser-chromium": "^1.54.2",
     "@types/node": "^24.3.0",
-    "dotenv": "^17.2.1",
-    "playwright": "^1.54.2",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2"
   },
-  "dependencies": {
-    "18": "^0.0.0"
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }

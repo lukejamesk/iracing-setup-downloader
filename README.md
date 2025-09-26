@@ -1,23 +1,130 @@
-This project is intended to be run inside WSL within windows. It probably works on linx/osx but the copy may not be useful so just disable it in the environment
+# P1Doks Downloader Monorepo
 
-# Important
+A monorepo containing multiple applications for downloading and managing P1Doks setups for iRacing.
 
-I recommend running the first time with your g61 agent turned off so you dont accidentally delete your folder and sync it if things go wrong.
+## Packages
 
-Make a backup of your setups directory
+- **@p1doks-downloader/core** - Core downloader functionality
+- **@p1doks-downloader/cli** - Command-line interface
+- **@p1doks-downloader/ui** - React web interface (planned)
+- **@p1doks-downloader/electron** - Desktop application (planned)
 
-### Dependencies
+## Getting Started
 
-- node
-- npm
+### Prerequisites
 
-### Run instructions
+- Node.js 18+
+- npm 8+
 
-1. `npm install`
-2. Copy `.envexample` to `.env` and fill it in
-3. `npm run start` (build and start)
+### Installation
 
-### Notes:
+```bash
+# Install all dependencies
+npm run install:all
+```
 
-1. Currently doesnt pagination the setups list, so I would recommend limiting to only a single season and single week at a time.
-2. Only GT3 cars currently have a mapping from p1doks car name > iracing setup name.. So only gt3 cars will correctly sync unless you add it to `./src/mappers.ts`
+### Development
+
+```bash
+# Build all packages
+npm run build
+
+# Clean all build artifacts
+npm run clean
+```
+
+## CLI Package
+
+The CLI package provides a command-line interface for the downloader:
+
+```bash
+# Interactive setup wizard
+cd packages/cli && npm start -- setup
+
+# Download setups with command line options
+cd packages/cli && npm start -- download --email user@example.com --password secret --series "GT Sprint" --season "1" --week "1" --team "My Team" --year 2025
+```
+
+## Core Package
+
+The core package contains the main downloader functionality as a library. It's designed to be used by other packages (like the CLI) rather than run directly.
+
+```typescript
+import {runDownload, Config} from "@p1doks-downloader/core";
+
+const config: Config = {
+  email: "user@example.com",
+  password: "password",
+  series: "GT Sprint",
+  season: "1",
+  week: "1",
+  teamName: "My Team",
+  year: "2025",
+  runHeadless: true,
+};
+
+await runDownload(config);
+```
+
+## Configuration
+
+The CLI supports configuration through:
+
+1. **Command-line arguments** (recommended)
+2. **Configuration file** (for automation)
+3. **Interactive setup wizard**
+
+### Configuration File
+
+The CLI uses a configuration file located at `~/.config/p1doks/config.json` by default. You can specify a custom path using the `--config` option. You can create this file using the interactive setup:
+
+```bash
+# Create config in default location
+p1doks setup
+
+# Create config in custom location
+p1doks setup --config /path/to/custom/config.json
+```
+
+Or manually create the file with the following structure:
+
+```json
+{
+  "email": "your@email.com",
+  "password": "yourpassword",
+  "series": "GT Sprint",
+  "season": "1",
+  "week": "1",
+  "teamName": "your-team",
+  "year": "2025",
+  "runHeadless": true
+}
+```
+
+### Last Used Values
+
+The CLI automatically remembers the last used Series, Season, Week, and Year values for convenience. When you run `p1doks download` without specifying these parameters, it will use the values from your last successful download.
+
+**Priority order:**
+
+1. Command line options (highest priority)
+2. Last used values (from previous downloads)
+3. Config file defaults (lowest priority)
+
+This means you can:
+
+- Run `p1doks download` to repeat your last download
+- Override specific values: `p1doks download --season 2` (uses last used series, week, year)
+- Always override with full command line options
+
+## Project Structure
+
+```
+├── packages/
+│   ├── core/           # Core downloader functionality
+│   ├── cli/            # CLI application
+│   ├── ui/             # React web interface (planned)
+│   └── electron/       # Desktop application (planned)
+├── package.json        # Root workspace configuration
+└── README.md
+```

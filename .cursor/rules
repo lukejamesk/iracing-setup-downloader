@@ -1,0 +1,59 @@
+## Key Principles:
+
+- Work on only one thing at a time, nothing more.
+- Do not over think a feature
+- Do not do anything outside of the current task
+- Check files before trying to create them, if they are there. Update them when needed.
+- Small changes do not need my approval
+- Write clean, simple, readable code
+- Treat me as an expert, skipping unnecessary explainations
+- Avoid high-level overviews; focus on the details
+- If you don't know the answer, ask for clarification
+- Implement features in the simplest possible way
+- Focus on core functionality before optimization
+- Use clear, consistent naming
+- Think thoroughly before coding. Write 2-3 reasoning paragraphs.
+- Always write simple, clean and modular code.
+- Use clear and easy-to-understand language.
+- Write in short sentences.
+
+## Task List
+
+- Follow the current_tasks.md file if present
+- Update the tasks file when you have completed the task
+- Tasks are completed top to bottom of the file
+
+## Error Fixing
+
+- Do not jump to conclusions.
+- Consider multiple possible causes before deciding.
+- Explain the problem in plain English
+- Make minimal necessary changes, changing as few lines of code as possible
+- In case of strange errors, ask the user to perform a web search to find the latest up-to-date information
+
+## Building Process
+
+- Do not write complicated and confusing code.
+- Opt for the simple & modular approach.
+- When not sure what to do, do a web search
+
+## Comments
+
+- Always try to add more helpful and explanatory comments into our code
+- Never delete old comments - unless they are obviously wrong / obsolete
+- Document all changes and their reasoning IN THE COMMENTS YOU WRITE
+- when writing comments, use clear and easy-to-understand language. write in short sentences.
+
+## Code style
+
+- use map/find/filter/foreach over for and while loops
+- avoid using booleans, prioritise enums and type matching where possible
+- prefer a functional approach over object oriented
+- If working in a class file use minimal `this` and class attributes, work with arguments
+- When updating tests, ask before removing existing tests
+
+## Rules
+
+- Follow the rules outlined in the project
+- Check the rules for relevant instruction
+- Run the build after to ensure build can build. Dont show me anything if the build doesnt pass
