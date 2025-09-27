@@ -5,11 +5,18 @@ import {load, waitFor} from "./util";
 import {SetupPage} from "./page-objects/pages/setup-page";
 import path from "path";
 import fs from "fs";
-import {
-  mapCarP1DoksToIracing,
-  mapSeasonP1DoksToWBR,
-  mapTrackP1DoksToWBR,
-} from "./mappers";
+// Helper functions to apply mappings from config
+const applyCarMapping = (car: string, mappings?: Record<string, string>): string => {
+  return mappings?.[car] || car;
+};
+
+const applyTrackMapping = (track: string, mappings?: Record<string, string>): string => {
+  return mappings?.[track] || track;
+};
+
+const applySeasonMapping = (season: string, mappings?: Record<string, string>): string => {
+  return mappings?.[season] || season;
+};
 
 export interface DownloadProgress {
   type: "info" | "success" | "error";
@@ -163,12 +170,16 @@ export const downloadSetups = async (
         timestamp: new Date(),
       });
 
+      const mappedCar = applyCarMapping(details.car, config.mappings?.carP1DoksToIracing);
+      const mappedSeason = applySeasonMapping(details.season, config.mappings?.seasonP1DoksToWBR);
+      const mappedTrack = applyTrackMapping(details.track, config.mappings?.trackP1DoksToWBR);
+      
       const folder = path.join(
         config.downloadPath,
-        mapCarP1DoksToIracing(details.car),
+        mappedCar,
         `Garage 61 - ${config.teamName}`,
-        `${config.year} ${mapSeasonP1DoksToWBR(details.season)}`,
-        mapTrackP1DoksToWBR(details.track),
+        `${config.year} ${mappedSeason}`,
+        mappedTrack,
         "p1doks"
       );
       fs.mkdirSync(folder, {recursive: true});

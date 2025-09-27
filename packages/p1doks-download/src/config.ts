@@ -8,6 +8,12 @@ export type Config = {
   teamName: string;
   downloadPath: string;
   runHeadless?: boolean;
+  // Mapping configurations for P1Doks to iRacing conversions
+  mappings?: {
+    carP1DoksToIracing?: Record<string, string>;
+    trackP1DoksToWBR?: Record<string, string>;
+    seasonP1DoksToWBR?: Record<string, string>;
+  };
   // Last used values for convenience
   lastUsed?: {
     series?: string;

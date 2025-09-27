@@ -31,17 +31,21 @@ const setupAutoReload = (mainWindow: BrowserWindow): void => {
 };
 
 export const createMainWindow = (): BrowserWindow => {
+  // Determine window dimensions - add 400px width in development
+  const isDevelopment = process.env.NODE_ENV === "development" || !app.isPackaged;
+  const windowWidth = isDevelopment ? 1800 : 1400; // 1400 + 400 = 1800
+  
   // Create the browser window
   const mainWindow = new BrowserWindow({
-    width: 1400,
+    width: windowWidth,
     height: 950,
-    autoHideMenuBar: false, // Show menu bar in development
+    autoHideMenuBar: !isDevelopment, // Hide menu bar in production, show in development
     icon: path.join(__dirname, "assets/icon.png"),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
-      devTools: true, // Ensure DevTools are enabled
+      devTools: isDevelopment, // Only enable DevTools in development
     },
   });
 

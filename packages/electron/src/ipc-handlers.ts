@@ -16,6 +16,7 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
 
   // IPC handler for download functionality
   ipcMain.handle("download-setups", async (event, config: Config) => {
+    console.log('Received config:', JSON.stringify(config, null, 2));
     const senderId = event.sender.id;
     const controller = new AbortController();
     activeDownloads.set(senderId, {controller});

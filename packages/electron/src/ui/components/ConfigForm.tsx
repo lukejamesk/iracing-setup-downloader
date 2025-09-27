@@ -8,7 +8,7 @@ import ConfigFormFields from "./ConfigFormFields";
 declare global {
   interface Window {
     electronAPI?: {
-      downloadSetups: (config: any) => Promise<{
+      downloadSetups: (config: Config) => Promise<{
         success: boolean;
         error?: string;
         cancelled?: boolean;
@@ -26,18 +26,7 @@ declare global {
   }
 }
 
-interface Config {
-  email: string;
-  password: string;
-  series: string;
-  season: string;
-  year: string;
-  week: string;
-  teamName: string;
-  downloadPath: string;
-  runHeadless?: boolean;
-  rememberCredentials?: boolean;
-}
+import { Config } from '../hooks/useConfigForm';
 
 const ConfigForm: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);

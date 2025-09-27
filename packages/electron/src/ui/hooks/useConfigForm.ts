@@ -1,16 +1,9 @@
 import { useState, useCallback } from 'react';
 import { useLocalStorage, useHistoryStorage } from './useLocalStorage';
+import { Config as CoreConfig } from '@p1doks-downloader/p1doks-download';
 
-export interface Config {
-  email: string;
-  password: string;
-  series: string;
-  season: string;
-  year: string;
-  week: string;
-  teamName: string;
-  downloadPath: string;
-  runHeadless?: boolean;
+// Extend the core Config with UI-specific fields
+export interface Config extends CoreConfig {
   rememberCredentials?: boolean;
 }
 
@@ -19,6 +12,29 @@ interface UseConfigFormProps {
 }
 
 export function useConfigForm({ onDownload }: UseConfigFormProps) {
+  // Default mappings for P1Doks to iRacing conversions
+  const defaultMappings = {
+    carP1DoksToIracing: {
+      "Acura NSX GT3 EVO 22": "acuransxevo22gt3",
+      "Audi R8 LMS GT3 EVO II": "audir8lmsevo2gt3",
+      "BMW M4 GT3": "bmwm4gt3",
+      "Chevrolet Corvette Z06 GT3.R": "chevyvettez06rgt3",
+      "Ferrari 296 GT3": "ferrari296gt3",
+      "Ford Mustang GT3": "fordmustanggt3",
+      "Lamborghini Huracán GT3 EVO": "lamborghinievogt3",
+      "McLaren 720S GT3 EVO": "mclaren720sgt3",
+      "Mercedes-AMG GT3 2020": "mercedesamgevogt3",
+      "Porsche 911 GT3 R (992)": "porsche992rgt3",
+      "Aston Martin GT3": "amvantageevogt3",
+    },
+    trackP1DoksToWBR: {
+      "Silverstone Circuit": "Silverstone Circuit - Grand Prix",
+    },
+    seasonP1DoksToWBR: {
+      "Season 3": "2025 Season 3",
+    },
+  };
+
   // Load config from localStorage with default values
   const [config, setConfig] = useLocalStorage<Config>('p1doks-config', {
     email: '',
@@ -31,7 +47,14 @@ export function useConfigForm({ onDownload }: UseConfigFormProps) {
     downloadPath: '',
     runHeadless: true,
     rememberCredentials: true,
+    mappings: defaultMappings,
   });
+
+  // Ensure mappings are always present (migration for existing configs)
+  const configWithMappings = {
+    ...config,
+    mappings: config.mappings || defaultMappings,
+  };
 
   // Form state
   const [isLoading, setIsLoading] = useState(false);
@@ -104,33 +127,34 @@ export function useConfigForm({ onDownload }: UseConfigFormProps) {
 
       try {
         const requiredFields = ['email', 'password', 'series', 'season', 'week', 'teamName', 'year'];
-        const missingFields = requiredFields.filter((field) => !config[field as keyof Config]);
+        const missingFields = requiredFields.filter((field) => !configWithMappings[field as keyof Config]);
 
         if (missingFields.length > 0) {
           throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
         }
 
         // Add to history on successful download
-        if (config.series) {
-          seriesHistory.addToHistory(config.series);
+        if (configWithMappings.series) {
+          seriesHistory.addToHistory(configWithMappings.series);
         }
-        if (config.teamName) {
-          teamNameHistory.addToHistory(config.teamName);
+        if (configWithMappings.teamName) {
+          teamNameHistory.addToHistory(configWithMappings.teamName);
         }
 
-        await onDownload(config);
+        console.log('UI sending config to download:', JSON.stringify(configWithMappings, null, 2));
+        await onDownload(configWithMappings);
       } catch (error) {
         // Error handling is done in parent component with toasters
       } finally {
         setIsLoading(false);
       }
     },
-    [config, onDownload, seriesHistory, teamNameHistory]
+    [configWithMappings, onDownload, seriesHistory, teamNameHistory]
   );
 
   return {
     // State
-    config,
+    config: configWithMappings,
     isLoading,
     message,
     setMessage,
