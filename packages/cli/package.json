@@ -13,7 +13,7 @@
     "start": "npm run build && node dist/index.js"
   },
   "dependencies": {
-    "@p1doks-downloader/core": "*",
+    "@p1doks-downloader/p1doks-download": "*",
     "commander": "^12.0.0",
     "inquirer": "^8.2.6"
   },

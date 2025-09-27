@@ -17,7 +17,7 @@
     "dist": "npm run build && npm run create-prod-package && electron-builder --win"
   },
   "dependencies": {
-    "@p1doks-downloader/core": "*",
+    "@p1doks-downloader/p1doks-download": "*",
     "playwright-core": "^1.54.2"
   },
   "devDependencies": {
@@ -77,7 +77,7 @@
       "!src/ui/**/*"
     ],
     "asarUnpack": [
-      "node_modules/@p1doks-downloader/core/**/*",
+      "node_modules/@p1doks-downloader/p1doks-download/**/*",
       "node_modules/playwright-core/.local-browsers/**/*"
     ],
     "compression": "maximum",

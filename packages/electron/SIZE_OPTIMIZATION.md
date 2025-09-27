@@ -36,7 +36,7 @@ This document explains the optimizations implemented to reduce the size of the P
 
 ```json
 "asarUnpack": [
-  "node_modules/@p1doks-downloader/core/**/*"
+  "node_modules/@p1doks-downloader/p1doks-download/**/*"
 ]
 ```
 

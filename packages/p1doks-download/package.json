@@ -1,5 +1,5 @@
 {
-  "name": "@p1doks-downloader/core",
+  "name": "@p1doks-downloader/p1doks-download",
   "version": "1.0.0",
   "description": "Core P1Doks downloader functionality",
   "main": "dist/index.js",

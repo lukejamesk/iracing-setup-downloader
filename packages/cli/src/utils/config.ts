@@ -1,4 +1,4 @@
-import {Config} from "@p1doks-downloader/core";
+import {Config} from "@p1doks-downloader/p1doks-download";
 import {loadConfig} from "./config-file";
 
 export const getConfig = (options: any): Config => {

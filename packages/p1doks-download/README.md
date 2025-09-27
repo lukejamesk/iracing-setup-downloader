@@ -1,4 +1,4 @@
-# @p1doks-downloader/core
+# @p1doks-downloader/p1doks-download
 
 Core functionality for downloading and managing P1Doks setups for iRacing.
 
@@ -14,7 +14,7 @@ Core functionality for downloading and managing P1Doks setups for iRacing.
 ### As a Library
 
 ```typescript
-import {runDownload, Config} from "@p1doks-downloader/core";
+import {runDownload, Config} from "@p1doks-downloader/p1doks-download";
 
 const config: Config = {
   email: "user@example.com",
@@ -34,7 +34,7 @@ await runDownload(config);
 ### Lower-level API
 
 ```typescript
-import {downloadSetups, Config} from "@p1doks-downloader/core";
+import {downloadSetups, Config} from "@p1doks-downloader/p1doks-download";
 import {chromium} from "playwright";
 
 const config: Config = {

@@ -1,4 +1,4 @@
-import {runDownload} from "@p1doks-downloader/core";
+import {runDownload} from "@p1doks-downloader/p1doks-download";
 import {getConfig, updateLastUsed} from "../utils";
 
 export const downloadCommand = async (options: any) => {

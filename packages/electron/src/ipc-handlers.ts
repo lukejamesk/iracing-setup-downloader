@@ -1,5 +1,5 @@
 import {ipcMain, dialog, BrowserWindow} from "electron";
-import {runDownload, Config, DownloadProgress} from "@p1doks-downloader/core";
+import {runDownload, Config, DownloadProgress} from "@p1doks-downloader/p1doks-download";
 import {Browser} from "playwright-core";
 
 // Store active download controllers and browser instances by sender ID

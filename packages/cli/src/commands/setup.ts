@@ -1,4 +1,4 @@
-import {Config} from "@p1doks-downloader/core";
+import {Config} from "@p1doks-downloader/p1doks-download";
 import {saveConfig} from "../utils/config-file";
 
 export const setupCommand = async (options: any) => {

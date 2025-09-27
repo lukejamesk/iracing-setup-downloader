@@ -6,7 +6,7 @@ A Windows desktop application for the P1Doks downloader built with Electron and 
 
 - **Windows Desktop GUI**: Native Windows desktop application using Electron
 - **Integrated React UI**: Built-in React components and pages for the user interface
-- **Core Integration**: Uses the `@p1doks-downloader/core` package for download functionality
+- **Core Integration**: Uses the `@p1doks-downloader/p1doks-download` package for download functionality
 - **Windows-Only**: Optimized specifically for Windows 10/11
 - **Hot Reloading**: Development mode with hot reloading for UI changes
 
@@ -92,7 +92,7 @@ packages/electron/
 
 ## Integration with Core
 
-The Electron app integrates with the core downloader functionality through the `@p1doks-downloader/core` package. This allows the GUI to:
+The Electron app integrates with the core downloader functionality through the `@p1doks-downloader/p1doks-download` package. This allows the GUI to:
 
 - Use the same download logic as the CLI
 - Maintain consistency across different interfaces

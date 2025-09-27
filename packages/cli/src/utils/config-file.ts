@@ -1,4 +1,4 @@
-import {Config} from "@p1doks-downloader/core";
+import {Config} from "@p1doks-downloader/p1doks-download";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";

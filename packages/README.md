@@ -4,7 +4,7 @@ This directory contains all the packages in the P1Doks downloader monorepo.
 
 ## Current Packages
 
-### @p1doks-downloader/core
+### @p1doks-downloader/p1doks-download
 
 Core functionality for downloading and managing P1Doks setups. Contains the main business logic, page objects, and utilities.
 

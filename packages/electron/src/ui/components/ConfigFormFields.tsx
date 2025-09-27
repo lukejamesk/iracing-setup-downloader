@@ -68,7 +68,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
     >
       <Box sx={{p: 2, borderBottom: 1, borderColor: "divider"}}>
         <Typography variant="h6" component="h3">
-          Configure your download settings 
+          Configure your download settings  
         </Typography>  
       </Box>
 

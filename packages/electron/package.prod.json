@@ -4,6 +4,6 @@
   "description": "Electron GUI for P1Doks downloader",
   "main": "dist/main.js",
   "dependencies": {
-    "@p1doks-downloader/core": "*"
+    "@p1doks-downloader/p1doks-download": "*"
   }
 }
