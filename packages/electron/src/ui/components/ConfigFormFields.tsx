@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React from "react";
 import {
   Box,
   Paper,
@@ -7,33 +7,18 @@ import {
   Switch,
   Button,
   Typography,
-  Alert,
-  CircularProgress,
   Autocomplete,
   IconButton,
   InputAdornment,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import {
-  Download as DownloadIcon,
   Cancel as CancelIcon,
   FolderOpen as FolderIcon,
   Flag as FlagIcon,
 } from "@mui/icons-material";
 import HistoryAutocomplete from "./HistoryAutocomplete";
-
-interface Config {
-  email: string;
-  password: string;
-  series: string;
-  season: string;
-  year: string;
-  week: string;
-  teamName: string;
-  downloadPath: string;
-  runHeadless?: boolean;
-  rememberCredentials?: boolean;
-}
+import { useConfigForm, Config } from "../hooks/useConfigForm";
 
 interface ConfigFormFieldsProps {
   onDownload: (config: Config) => Promise<{completed: boolean}>;
@@ -44,188 +29,29 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
   onDownload,
   onCancel,
 }) => {
-  const [config, setConfig] = useState<Config>(() => {
-    const savedConfig = localStorage.getItem("p1doks-config");
-    if (savedConfig) {
-      try {
-        const parsed = JSON.parse(savedConfig);
-        return {...parsed};
-      } catch (error) {
-        console.error("Error loading config from localStorage:", error);
-      }
-    }
-    return {
-      email: "",
-      password: "",
-      series: "",
-      season: "",
-      year: "",
-      week: "",
-      teamName: "",
-      downloadPath: "",
-      runHeadless: true,
-      rememberCredentials: true, // Default to checked
-    };
-  });
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
-  const [seriesHistory, setSeriesHistory] = useState<string[]>([]);
-  const [teamNameHistory, setTeamNameHistory] = useState<string[]>([]);
-
-  // Generate valid values for dropdowns
-  const seasonOptions = ["1", "2", "3", "4"];
-  const weekOptions = Array.from({length: 12}, (_, i) => (i + 1).toString());
-  const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({length: 3}, (_, i) =>
-    (currentYear - i).toString()
-  );
-
-  // Load history from localStorage on component mount
-  useEffect(() => {
-    // Load series history
-    const savedSeriesHistory = localStorage.getItem("p1doks-series-history");
-    if (savedSeriesHistory) {
-      try {
-        const parsedHistory = JSON.parse(savedSeriesHistory);
-        setSeriesHistory(parsedHistory);
-      } catch (error) {
-        console.error("Error loading series history:", error);
-      }
-    }
-
-    // Load team name history
-    const savedTeamHistory = localStorage.getItem("p1doks-team-history");
-    if (savedTeamHistory) {
-      try {
-        const parsedHistory = JSON.parse(savedTeamHistory);
-        setTeamNameHistory(parsedHistory);
-      } catch (error) {
-        console.error("Error loading team name history:", error);
-      }
-    }
-  }, []);
-
-  // Save config to localStorage whenever it changes
-  useEffect(() => {
-    const configToSave = {...config};
+  const {
+    // State
+    config,
+    isLoading,
     
-    // If rememberCredentials is false, don't save email and password
-    if (!configToSave.rememberCredentials) {
-      configToSave.email = "";
-      configToSave.password = "";
-    }
+    // Options
+    seasonOptions,
+    weekOptions,
+    yearOptions,
     
-    localStorage.setItem("p1doks-config", JSON.stringify(configToSave));
-  }, [config]);
-
-  const handleInputChange =
-    (field: keyof Config) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value =
-        field === "runHeadless" || field === "rememberCredentials" 
-          ? event.target.checked 
-          : event.target.value;
-      setConfig((prev) => ({...prev, [field]: value}));
-    };
-
-  const handleFolderPicker = async () => {
-    if (window.electronAPI?.selectFolder) {
-      try {
-        const result = await window.electronAPI.selectFolder();
-        if (result.success) {
-          setConfig((prev) => ({...prev, downloadPath: result.path}));
-        }
-      } catch (error) {
-        console.error("Error selecting folder:", error);
-      }
-    }
-  };
-
-  const addToSeriesHistory = (series: string) => {
-    if (series && !seriesHistory.includes(series)) {
-      const newHistory = [series, ...seriesHistory].slice(0, 10); // Keep last 10
-      setSeriesHistory(newHistory);
-      localStorage.setItem("p1doks-series-history", JSON.stringify(newHistory));
-    }
-  };
-
-  const addToTeamNameHistory = (teamName: string) => {
-    if (teamName && !teamNameHistory.includes(teamName)) {
-      const newHistory = [teamName, ...teamNameHistory].slice(0, 10); // Keep last 10
-      setTeamNameHistory(newHistory);
-      localStorage.setItem("p1doks-team-history", JSON.stringify(newHistory));
-    }
-  };
-
-  const handleSeriesChange = (value: string | null) => {
-    const series = value || "";
-    setConfig((prev) => ({...prev, series}));
-    addToSeriesHistory(series);
-  };
-
-  const handleTeamNameChange = (value: string | null) => {
-    const teamName = value || "";
-    setConfig((prev) => ({...prev, teamName}));
-    addToTeamNameHistory(teamName);
-  };
-
-  const removeFromSeriesHistory = (seriesToRemove: string) => {
-    const newHistory = seriesHistory.filter(
-      (series) => series !== seriesToRemove
-    );
-    setSeriesHistory(newHistory);
-    localStorage.setItem("p1doks-series-history", JSON.stringify(newHistory));
-  };
-
-  const removeFromTeamNameHistory = (teamNameToRemove: string) => {
-    const newHistory = teamNameHistory.filter(
-      (teamName) => teamName !== teamNameToRemove
-    );
-    setTeamNameHistory(newHistory);
-    localStorage.setItem("p1doks-team-history", JSON.stringify(newHistory));
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setMessage(null);
-
-    try {
-      const requiredFields = [
-        "email",
-        "password",
-        "series",
-        "season",
-        "week",
-        "teamName",
-        "year",
-      ];
-      const missingFields = requiredFields.filter(
-        (field) => !config[field as keyof Config]
-      );
-
-      if (missingFields.length > 0) {
-        throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
-      }
-
-      // Add to history on successful download
-      if (config.series) {
-        addToSeriesHistory(config.series);
-      }
-      if (config.teamName) {
-        addToTeamNameHistory(config.teamName);
-      }
-
-      const result = await onDownload(config);
-    } catch (error) {
-      // Error handling is now done in ConfigForm with toasters
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // History
+    seriesHistory,
+    teamNameHistory,
+    
+    // Handlers
+    handleInputChange,
+    handleFolderPicker,
+    handleSeriesChange,
+    handleTeamNameChange,
+    handleSubmit,
+    removeFromSeriesHistory,
+    removeFromTeamNameHistory,
+  } = useConfigForm({ onDownload });
 
   return (
     <Paper
@@ -242,7 +68,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
     >
       <Box sx={{p: 2, borderBottom: 1, borderColor: "divider"}}>
         <Typography variant="h6" component="h3">
-          Configure your download settings  
+          Configure your download settings 
         </Typography>  
       </Box>
 
@@ -259,7 +85,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
         <form
           onSubmit={handleSubmit}
           style={{
-            flex: 1,
+            flex: 1, 
             display: "flex",
             flexDirection: "column",
             width: "100%",
@@ -346,16 +172,9 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
                 history={seriesHistory}
                 onChange={handleSeriesChange}
                 onInputChange={(newInputValue) => {
-                  setConfig((prev) => ({
-                    ...prev,
-                    series: newInputValue,
-                  }));
+                  handleSeriesChange(newInputValue);
                 }}
-                onBlur={() => {
-                  if (config.series) {
-                    addToSeriesHistory(config.series);
-                  }
-                }}
+                onBlur={() => {}}
                 onRemoveFromHistory={removeFromSeriesHistory}
                 required
               />
@@ -384,16 +203,9 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
                     history={teamNameHistory}
                     onChange={handleTeamNameChange}
                     onInputChange={(newInputValue) => {
-                      setConfig((prev) => ({
-                        ...prev,
-                        teamName: newInputValue,
-                      }));
+                      handleTeamNameChange(newInputValue);
                     }}
-                    onBlur={() => {
-                      if (config.teamName) {
-                        addToTeamNameHistory(config.teamName);
-                      }
-                    }}
+                    onBlur={() => {}}
                     onRemoveFromHistory={removeFromTeamNameHistory}
                     required
                   />
@@ -407,10 +219,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
                 options={seasonOptions}
                 value={config.season}
                 onChange={(_, newValue) => {
-                  setConfig((prev) => ({
-                    ...prev,
-                    season: newValue || "",
-                  }));
+                  handleInputChange("season")({ target: { value: newValue || "" } } as React.ChangeEvent<HTMLInputElement>);
                 }}
                 renderInput={(params) => (
                   <TextField
@@ -431,10 +240,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
                 options={weekOptions}
                 value={config.week}
                 onChange={(_, newValue) => {
-                  setConfig((prev) => ({
-                    ...prev,
-                    week: newValue || "",
-                  }));
+                  handleInputChange("week")({ target: { value: newValue || "" } } as React.ChangeEvent<HTMLInputElement>);
                 }}
                 renderInput={(params) => (
                   <TextField
@@ -455,10 +261,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
                 options={yearOptions}
                 value={config.year}
                 onChange={(_, newValue) => {
-                  setConfig((prev) => ({
-                    ...prev,
-                    year: newValue || "",
-                  }));
+                  handleInputChange("year")({ target: { value: newValue || "" } } as React.ChangeEvent<HTMLInputElement>);
                 }}
                 renderInput={(params) => (
                   <TextField
