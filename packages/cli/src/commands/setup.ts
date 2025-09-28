@@ -1,5 +1,6 @@
 import {Config} from "@p1doks-downloader/p1doks-download";
-import {saveConfig} from "../utils/config-file";
+import {saveConfig, CLIConfig} from "../utils/config-file";
+import {DEFAULT_CAR_MAPPINGS, DEFAULT_TRACK_MAPPINGS} from "../constants/default-mappings";
 
 export const setupCommand = async (options: any) => {
   try {
@@ -12,7 +13,7 @@ export const setupCommand = async (options: any) => {
   }
 };
 
-const interactiveSetup = async (customPath?: string): Promise<Config> => {
+const interactiveSetup = async (customPath?: string): Promise<CLIConfig> => {
   const inquirer = require("inquirer");
   const questions = [
     {
@@ -78,16 +79,20 @@ const interactiveSetup = async (customPath?: string): Promise<Config> => {
 
   const answers = await inquirer.prompt(questions);
 
-  const config: Config = {
+  const config: CLIConfig = {
     email: answers.email,
     password: answers.password,
     series: answers.series,
     season: answers.season,
     week: answers.week,
-    teamName: answers.team,
+    selectedTeams: [{ id: answers.team.toLowerCase().replace(/\s+/g, '-'), name: answers.team }],
     year: answers.year,
     downloadPath: answers.downloadPath,
     runHeadless: answers.headless,
+    mappings: {
+      carP1DoksToIracing: DEFAULT_CAR_MAPPINGS,
+      trackP1DoksToWBR: DEFAULT_TRACK_MAPPINGS,
+    },
   };
 
   // Save to config file

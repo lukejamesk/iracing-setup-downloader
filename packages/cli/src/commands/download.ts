@@ -13,6 +13,7 @@ export const downloadCommand = async (options: any) => {
         season: config.season,
         week: config.week,
         year: config.year,
+        selectedTeamIds: config.selectedTeams.map(t => t.id),
       },
       options.config
     );

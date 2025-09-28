@@ -34,7 +34,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 const defaultSettings: GeneralSettings = {
   teams: [],
   activeTeamId: null,
-  downloadPath: '',
+  downloadPath: '', // Will be set via IPC from main process
   backgroundImage: './racing-cars-background.png',
 };
 

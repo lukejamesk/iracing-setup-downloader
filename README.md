@@ -1,20 +1,23 @@
 # P1Doks Downloader
 
-A Windows desktop application for downloading and managing P1Doks setups for iRacing. Built with Electron and React, providing both a graphical user interface and command-line interface.
+A Windows desktop application for downloading and managing P1Doks setups for iRacing. Built with Electron and React, providing a modern graphical user interface.
+
+**⚠️ Electron App**: The desktop application currently only works on Windows 10/11. However, the CLI works cross-platform on Windows, Linux, and macOS.
 
 ## Packages
 
-- **@p1doks-downloader/core** - Core downloader functionality
-- **@p1doks-downloader/cli** - Command-line interface
-- **@p1doks-downloader/electron** - Windows desktop application with integrated React UI
+- **@p1doks-downloader/p1doks-download** - Core downloader functionality
+- **@p1doks-downloader/cli** - Cross-platform command-line interface
+- **@p1doks-downloader/electron** - Windows desktop application with integrated React UI (primary interface)
 
 ## Getting Started
 
 ### Prerequisites
 
-- **Windows 10/11** (required)
-- Node.js 18+
-- npm 8+
+- **Windows 10/11** (required for Electron desktop app)
+- **Node.js 18+** (required for all interfaces)
+- **npm 8+** (required for all interfaces)
+- **Cross-platform support**: CLI works on Windows, Linux, and macOS
 
 ### Installation
 
@@ -35,22 +38,29 @@ npm run clean
 
 ## CLI Package
 
-The CLI package provides a command-line interface for the downloader:
+The CLI package provides a cross-platform command-line interface for the downloader that works on Windows, Linux, and macOS:
 
 ```bash
 # Interactive setup wizard
 cd packages/cli && npm start -- setup
 
-# Download setups with command line options
+# Download setups with command line options (use quotes for values with spaces)
 cd packages/cli && npm start -- download --email user@example.com --password secret --series "GT Sprint" --season "1" --week "1" --team "My Team" --year 2025
+
+# Download with series names containing spaces
+cd packages/cli && npm start -- download --email user@example.com --password secret --series "Porsche Cup" --team "My Racing Team" --season "2" --week "3" --year "2025"
 ```
+
+**Note**: Always use quotes around arguments that contain spaces:
+- **PowerShell**: Use single quotes `'Porsche Cup'`, `'My Racing Team'`
+- **Command Prompt/Bash**: Use double quotes `"Porsche Cup"`, `"My Racing Team"`
 
 ## Core Package
 
-The core package contains the main downloader functionality as a library. It's designed to be used by other packages (like the CLI) rather than run directly.
+The core package (`@p1doks-downloader/p1doks-download`) contains the main downloader functionality as a library. It's designed to be used by other packages (like the Electron app) rather than run directly.
 
 ```typescript
-import {runDownload, Config} from "@p1doks-downloader/core";
+import {runDownload, Config} from "@p1doks-downloader/p1doks-download";
 
 const config: Config = {
   email: "user@example.com",
@@ -117,9 +127,9 @@ This means you can:
 - Override specific values: `p1doks download --season 2` (uses last used series, week, year)
 - Always override with full command line options
 
-## Desktop Application (Windows Only)
+## Desktop Application (Primary Interface)
 
-The main application is a Windows desktop app built with Electron and React:
+The main application is a Windows desktop app built with Electron and React. This is the recommended way to use the P1Doks downloader:
 
 ### Running the Desktop App
 
@@ -151,22 +161,29 @@ npm run dev:electron
 ```
 
 The Electron app provides a modern graphical interface for downloading P1Doks setups, with features like:
-- Interactive configuration form
-- Real-time download progress
+- Service selection interface (P1Doks and future services)
+- Interactive configuration forms with validation
+- Real-time download progress tracking
 - Download history and logs
-- Automatic credential management
+- Settings management with custom backgrounds
+- File management and folder selection
+- Modern Material-UI design
 
 ## Project Structure
 
 ```
 ├── packages/
-│   ├── core/           # Core downloader functionality
-│   ├── cli/            # CLI application
-│   └── electron/       # Desktop application with integrated React UI
+│   ├── p1doks-download/    # Core downloader functionality
+│   ├── cli/                # CLI application (may not be working)
+│   └── electron/           # Desktop application with integrated React UI
 │       ├── src/
-│       │   ├── ui/     # React UI components and pages
-│       │   └── ...     # Electron main process files
-│       └── ui-dist/    # Built UI files
-├── package.json        # Root workspace configuration
+│       │   ├── ui/         # React UI components and pages
+│       │   │   ├── components/  # React components (forms, settings, etc.)
+│       │   │   ├── contexts/    # React contexts for state management
+│       │   │   └── hooks/       # Custom React hooks
+│       │   └── ...         # Electron main process files
+│       ├── public/         # Static assets (logos, backgrounds)
+│       └── ui-dist/        # Built UI files
+├── package.json            # Root workspace configuration
 └── README.md
 ```

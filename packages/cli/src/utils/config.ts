@@ -1,5 +1,6 @@
 import {Config} from "@p1doks-downloader/p1doks-download";
 import {loadConfig} from "./config-file";
+import {DEFAULT_CAR_MAPPINGS, DEFAULT_TRACK_MAPPINGS} from "../constants/default-mappings";
 
 export const getConfig = (options: any): Config => {
   // Load config from file
@@ -17,9 +18,10 @@ export const getConfig = (options: any): Config => {
   ];
 
   const missingFields = requiredFields.filter((field) => {
-    const optionKey = field === "team" ? "team" : field;
-    const configKey = field === "team" ? "teamName" : field;
-    return !options[optionKey] && !fileConfig?.[configKey as keyof Config];
+    if (field === "team") {
+      return !options.team && (!fileConfig?.selectedTeams || fileConfig.selectedTeams.length === 0);
+    }
+    return !options[field] && !fileConfig?.[field as keyof Config];
   });
 
   if (missingFields.length > 0) {
@@ -30,12 +32,19 @@ export const getConfig = (options: any): Config => {
     process.exit(1);
   }
 
+  // Handle team conversion from CLI option to selectedTeams array
+  // Also handle underscore-to-space conversion for PowerShell compatibility
+  const teamName = options.team ? options.team.replace(/_/g, ' ') : '';
+  const selectedTeams = teamName
+    ? [{ id: teamName.toLowerCase().replace(/\s+/g, '-'), name: teamName }]
+    : fileConfig?.selectedTeams || [];
+
   // Merge config sources: command line options > lastUsed values > config file defaults
   return {
     email: options.email || fileConfig?.email || "",
     password: options.password || fileConfig?.password || "",
     series:
-      options.series ||
+      (options.series ? options.series.replace(/_/g, ' ') : '') ||
       fileConfig?.lastUsed?.series ||
       fileConfig?.series ||
       "",
@@ -45,11 +54,20 @@ export const getConfig = (options: any): Config => {
       fileConfig?.season ||
       "",
     week: options.week || fileConfig?.lastUsed?.week || fileConfig?.week || "",
-    teamName: options.team || fileConfig?.teamName || "",
+    selectedTeams: selectedTeams,
     year: options.year || fileConfig?.lastUsed?.year || fileConfig?.year || "",
     downloadPath:
       options.downloadPath || fileConfig?.downloadPath || "./setups",
     runHeadless: options.headless ?? fileConfig?.runHeadless ?? true,
-    lastUsed: fileConfig?.lastUsed,
+    mappings: {
+      carP1DoksToIracing: {
+        ...DEFAULT_CAR_MAPPINGS,
+        ...fileConfig?.mappings?.carP1DoksToIracing,
+      },
+      trackP1DoksToWBR: {
+        ...DEFAULT_TRACK_MAPPINGS,
+        ...fileConfig?.mappings?.trackP1DoksToWBR,
+      },
+    },
   };
 };

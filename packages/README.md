@@ -6,29 +6,31 @@ This directory contains all the packages in the P1Doks downloader monorepo.
 
 ### @p1doks-downloader/p1doks-download
 
-Core functionality for downloading and managing P1Doks setups. Contains the main business logic, page objects, and utilities.
-
-## Planned Packages
+Core functionality for downloading and managing P1Doks setups. Contains the main business logic, page objects, and utilities. This package provides the core download functionality used by other packages.
 
 ### @p1doks-downloader/cli
 
-Command-line interface application that provides a user-friendly CLI for the core functionality.
-
-### @p1doks-downloader/ui
-
-React web application that provides a modern web interface for downloading and managing setups.
+Cross-platform command-line interface application that provides a user-friendly CLI for the core functionality. Works on Windows, Linux, and macOS.
 
 ### @p1doks-downloader/electron
 
-Desktop application built with Electron that provides a native desktop experience.
+Desktop application built with Electron that provides a native desktop experience for Windows users. This is the primary and recommended interface for using the P1Doks downloader.
+
+**Features:**
+- Modern React-based UI with Material-UI components
+- Service selection interface (P1Doks and future services)
+- Interactive configuration forms with validation
+- Real-time download progress tracking
+- Settings management with custom backgrounds
+- File management and folder selection
+- Windows-only application
 
 ## Package Dependencies
 
 ```
-core (no dependencies on other packages)
-├── cli (depends on core)
-├── ui (depends on core)
-└── electron (depends on core)
+p1doks-download (no dependencies on other packages)
+├── cli (depends on p1doks-download)
+└── electron (depends on p1doks-download)
 ```
 
-All packages depend on the core package, but packages don't depend on each other to maintain clear separation of concerns.
+All packages depend on the core package (`p1doks-download`), but packages don't depend on each other to maintain clear separation of concerns. The Electron app is the primary interface for Windows users, while the CLI provides cross-platform functionality for all operating systems.

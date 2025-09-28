@@ -18,12 +18,4 @@ export type Config = {
     carP1DoksToIracing?: Record<string, string>;
     trackP1DoksToWBR?: Record<string, string>;
   };
-  // Last used values for convenience
-  lastUsed?: {
-    series?: string;
-    season?: string;
-    week?: string;
-    year?: string;
-    selectedTeamIds?: string[];
-  };
 };

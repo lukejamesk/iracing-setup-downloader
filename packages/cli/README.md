@@ -1,12 +1,19 @@
 # @p1doks-downloader/cli
 
-Command-line interface for the P1Doks downloader.
+Cross-platform command-line interface for the P1Doks downloader. Works on Windows, Linux, and macOS.
 
 ## Installation
 
 ```bash
 npm install -g @p1doks-downloader/cli
 ```
+
+## Cross-Platform Support
+
+The CLI works on all major operating systems:
+- **Windows**: Full support with Windows-specific optimizations
+- **Linux**: Full support with Linux-specific optimizations  
+- **macOS**: Full support with macOS-specific optimizations
 
 ## Usage
 
@@ -86,8 +93,17 @@ This means you can:
 ### Examples
 
 ```bash
-# Download with command line options
+# Download with command line options (use quotes for values with spaces)
 p1doks download --email user@example.com --password secret --series "GT Sprint" --season "1" --week "1" --team "My Team" --year 2025
+
+# Download with series names containing spaces (PowerShell - use underscores, recommended)
+p1doks download --email user@example.com --password secret --series Porsche_Cup --team My_Racing_Team --season 2 --week 3 --year 2025
+
+# Download with series names containing spaces (PowerShell - use single quotes)
+p1doks download --email user@example.com --password secret --series 'Porsche Cup' --team 'My Racing Team' --season '2' --week '3' --year '2025'
+
+# Download with series names containing spaces (Command Prompt/Bash - use double quotes)
+p1doks download --email user@example.com --password secret --series "Porsche Cup" --team "My Racing Team" --season "2" --week "3" --year "2025"
 
 # Download with default config file
 p1doks download
@@ -116,6 +132,36 @@ p1doks config --config /path/to/custom/config.json
 # Run in non-headless mode (shows browser)
 p1doks download --headless=false
 ```
+
+### Important Notes
+
+- **Use quotes for values with spaces**: Always wrap arguments containing spaces in quotes
+  - ✅ **PowerShell**: Use single quotes `--series 'Porsche Cup'`
+  - ✅ **Command Prompt/Bash**: Use double quotes `--series "Porsche Cup"`
+  - ❌ `--series Porsche Cup` (will be parsed as two separate arguments)
+
+- **PowerShell Users**: Use underscores instead of spaces to avoid quote issues
+  - ✅ `--series Porsche_Cup --team My_Racing_Team` (recommended for PowerShell)
+  - ✅ `--series 'Porsche Cup' --team 'My Racing Team'` (alternative)
+  - ⚠️ `--series "Porsche Cup"` (may show as `'^Porsche^ Cup^'` in logs)
+
+## Default Car Mappings
+
+The CLI includes the same default car mappings as the UI, covering all major GT3 cars:
+
+- Acura NSX GT3 EVO 22 → `acuransxevo22gt3`
+- Audi R8 LMS GT3 EVO II → `audir8lmsevo2gt3`
+- BMW M4 GT3 → `bmwm4gt3`
+- Chevrolet Corvette Z06 GT3.R → `chevyvettez06rgt3`
+- Ferrari 296 GT3 → `ferrari296gt3`
+- Ford Mustang GT3 → `fordmustanggt3`
+- Lamborghini Huracán GT3 EVO → `lamborghinievogt3`
+- McLaren 720S GT3 EVO → `mclaren720sgt3`
+- Mercedes-AMG GT3 2020 → `mercedesamgevogt3`
+- Porsche 911 GT3 R (992) → `porsche992rgt3`
+- Aston Martin GT3 → `amvantageevogt3`
+
+These mappings are automatically included when using the CLI and can be overridden in your config file if needed.
 
 ## Development
 

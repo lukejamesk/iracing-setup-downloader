@@ -20,9 +20,11 @@ export const configCommand = (options: any) => {
   console.log(`  Series: ${config.series}`);
   console.log(`  Season: ${config.season}`);
   console.log(`  Week: ${config.week}`);
-  console.log(`  Team: ${config.teamName}`);
+  console.log(`  Teams: ${config.selectedTeams.map(t => t.name).join(', ')}`);
   console.log(`  Year: ${config.year}`);
   console.log(`  Headless: ${config.runHeadless}`);
+  console.log(`  Car Mappings: ${config.mappings?.carP1DoksToIracing ? Object.keys(config.mappings.carP1DoksToIracing).length : 0} mappings`);
+  console.log(`  Track Mappings: ${config.mappings?.trackP1DoksToWBR ? Object.keys(config.mappings.trackP1DoksToWBR).length : 0} mappings`);
 
   if (config.lastUsed) {
     console.log("\nLast used values:");
@@ -32,5 +34,7 @@ export const configCommand = (options: any) => {
       console.log(`  Season: ${config.lastUsed.season}`);
     if (config.lastUsed.week) console.log(`  Week: ${config.lastUsed.week}`);
     if (config.lastUsed.year) console.log(`  Year: ${config.lastUsed.year}`);
+    if (config.lastUsed.selectedTeamIds && config.lastUsed.selectedTeamIds.length > 0)
+      console.log(`  Teams: ${config.lastUsed.selectedTeamIds.join(', ')}`);
   }
 };

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist",
+    "clean": "rimraf dist",
     "dev": "tsc --watch",
     "start": "npm run build && node dist/index.js"
   },
@@ -20,6 +20,7 @@
   "devDependencies": {
     "@types/inquirer": "^8.2.10",
     "@types/node": "^24.3.0",
+    "rimraf": "^6.0.1",
     "typescript": "^5.9.2"
   },
   "files": [

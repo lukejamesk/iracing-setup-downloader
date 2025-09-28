@@ -3,6 +3,17 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 
+// CLI-specific config interface that includes lastUsed for convenience
+export interface CLIConfig extends Config {
+  lastUsed?: {
+    series?: string;
+    season?: string;
+    week?: string;
+    year?: string;
+    selectedTeamIds?: string[];
+  };
+}
+
 const DEFAULT_CONFIG_DIR = path.join(os.homedir(), ".config", "p1doks");
 const DEFAULT_CONFIG_FILE = path.join(DEFAULT_CONFIG_DIR, "config.json");
 
@@ -13,7 +24,7 @@ export const getConfigPath = (customPath?: string): string => {
   return DEFAULT_CONFIG_FILE;
 };
 
-export const loadConfig = (customPath?: string): Config | null => {
+export const loadConfig = (customPath?: string): CLIConfig | null => {
   try {
     const configFile = getConfigPath(customPath);
     if (!fs.existsSync(configFile)) {
@@ -30,10 +41,15 @@ export const loadConfig = (customPath?: string): Config | null => {
       "series",
       "season",
       "week",
-      "teamName",
+      "selectedTeams",
       "year",
     ];
-    const missingFields = requiredFields.filter((field) => !config[field]);
+    const missingFields = requiredFields.filter((field) => {
+      if (field === "selectedTeams") {
+        return !config[field] || !Array.isArray(config[field]) || config[field].length === 0;
+      }
+      return !config[field];
+    });
 
     if (missingFields.length > 0) {
       console.error(
@@ -42,14 +58,14 @@ export const loadConfig = (customPath?: string): Config | null => {
       return null;
     }
 
-    return config as Config;
+    return config as CLIConfig;
   } catch (error) {
     console.error("Error loading config file:", error);
     return null;
   }
 };
 
-export const saveConfig = (config: Config, customPath?: string): void => {
+export const saveConfig = (config: CLIConfig, customPath?: string): void => {
   try {
     const configFile = getConfigPath(customPath);
     const configDir = path.dirname(configFile);
@@ -74,7 +90,7 @@ export const configExists = (customPath?: string): boolean => {
 };
 
 export const updateLastUsed = (
-  lastUsed: {series?: string; season?: string; week?: string; year?: string},
+  lastUsed: {series?: string; season?: string; week?: string; year?: string; selectedTeamIds?: string[]},
   customPath?: string
 ): void => {
   try {

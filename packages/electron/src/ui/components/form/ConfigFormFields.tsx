@@ -188,7 +188,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
         email: p1doksSettings.email,
         password: p1doksSettings.password,
         selectedTeams: selectedTeams,
-        downloadPath: generalSettings.downloadPath,
+        downloadPath: generalSettings.downloadPath || '~/Downloads/P1Doks Setups',
         
         // Mappings
         mappings: {
