@@ -12,6 +12,9 @@ interface HistoryAutocompleteProps {
   onBlur: () => void;
   onRemoveFromHistory: (value: string) => void;
   required?: boolean;
+  prefix?: string;
+  protectedOptions?: string[];
+  helperText?: string;
 }
 
 const HistoryAutocomplete: React.FC<HistoryAutocompleteProps> = ({
@@ -24,6 +27,9 @@ const HistoryAutocomplete: React.FC<HistoryAutocompleteProps> = ({
   onBlur,
   onRemoveFromHistory,
   required = false,
+  prefix = "",
+  protectedOptions = [],
+  helperText,
 }) => {
   return (
     <Autocomplete
@@ -49,16 +55,18 @@ const HistoryAutocomplete: React.FC<HistoryAutocompleteProps> = ({
               }}
             >
               <span>{option}</span>
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveFromHistory(option);
-                }}
-                sx={{ml: 1}}
-              >
-                <ClearIcon fontSize="small" />
-              </IconButton>
+              {!protectedOptions.includes(option) && (
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveFromHistory(option);
+                  }}
+                  sx={{ml: 1}}
+                >
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              )}
             </Box>
           </li>
         );
@@ -71,6 +79,21 @@ const HistoryAutocomplete: React.FC<HistoryAutocompleteProps> = ({
           required={required}
           variant="outlined"
           placeholder={placeholder}
+          helperText={helperText}
+          InputProps={{
+            ...params.InputProps,
+            startAdornment: prefix ? (
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                mr: 1,
+                color: 'text.secondary',
+                fontSize: '0.875rem'
+              }}>
+                {prefix}
+              </Box>
+            ) : undefined,
+          }}
         />
       )}
     />

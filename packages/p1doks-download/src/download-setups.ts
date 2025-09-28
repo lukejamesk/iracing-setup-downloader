@@ -14,9 +14,6 @@ const applyTrackMapping = (track: string, mappings?: Record<string, string>): st
   return mappings?.[track] || track;
 };
 
-const applySeasonMapping = (season: string, mappings?: Record<string, string>): string => {
-  return mappings?.[season] || season;
-};
 
 export interface DownloadProgress {
   type: "info" | "success" | "error";
@@ -171,27 +168,28 @@ export const downloadSetups = async (
       });
 
       const mappedCar = applyCarMapping(details.car, config.mappings?.carP1DoksToIracing);
-      const mappedSeason = applySeasonMapping(details.season, config.mappings?.seasonP1DoksToWBR);
       const mappedTrack = applyTrackMapping(details.track, config.mappings?.trackP1DoksToWBR);
-      
-      const folder = path.join(
-        config.downloadPath,
-        mappedCar,
-        `Garage 61 - ${config.teamName}`,
-        `${config.year} ${mappedSeason}`,
-        mappedTrack,
-        "p1doks"
-      );
-      fs.mkdirSync(folder, {recursive: true});
-      const filePath = path.join(folder, filename);
-      await download.saveAs(filePath);
 
-      onProgress?.({
-        type: "success",
-        message: `Saved: ${filename}`,
-        timestamp: new Date(),
-      });
-      console.log(`Saved ${filename} to ${filePath}`);
+      // Download for each selected team
+      for (const team of config.selectedTeams) {
+        const folder = path.join(
+          config.downloadPath,
+          mappedCar,
+          team.name,
+          `${config.year} Season ${config.season}`,
+          mappedTrack,
+          "p1doks"
+        );
+        fs.mkdirSync(folder, {recursive: true});
+        const filePath = path.join(folder, filename);
+        await download.saveAs(filePath);
+
+        onProgress?.({
+          type: "success",
+          message: `Saved to ${team.name}: ${filename}`,
+          timestamp: new Date(),
+        });
+      }
 
       await waitFor(250);
     }

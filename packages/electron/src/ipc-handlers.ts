@@ -1,4 +1,4 @@
-import {ipcMain, dialog, BrowserWindow} from "electron";
+import {ipcMain, dialog, BrowserWindow, shell} from "electron";
 import {runDownload, Config, DownloadProgress} from "@p1doks-downloader/p1doks-download";
 import {Browser} from "playwright-core";
 
@@ -13,6 +13,7 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
   ipcMain.removeAllListeners("download-setups");
   ipcMain.removeAllListeners("cancel-download");
   ipcMain.removeAllListeners("select-folder");
+  ipcMain.removeAllListeners("open-folder");
 
   // IPC handler for download functionality
   ipcMain.handle("download-setups", async (event, config: Config) => {
@@ -102,5 +103,16 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
     }
 
     return {success: false, error: "No folder selected"};
+  });
+
+  // IPC handler for opening folder in OS file explorer
+  ipcMain.handle("open-folder", async (event, path: string) => {
+    try {
+      await shell.openPath(path);
+      return {success: true};
+    } catch (error) {
+      console.error("Error opening folder:", error);
+      return {success: false, error: "Failed to open folder"};
+    }
   });
 };

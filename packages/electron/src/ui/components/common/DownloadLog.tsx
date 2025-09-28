@@ -1,17 +1,15 @@
 import React from "react";
 import {
   Box,
-  Paper,
   Typography,
   List,
   ListItem,
   ListItemText,
   Divider,
   CircularProgress,
-  IconButton,
 } from "@mui/material";
-import {CheckCircle, Info, Error, Close} from "@mui/icons-material";
-import { useAutoScroll } from "../hooks/useAutoScroll";
+import {CheckCircle, Info, Error} from "@mui/icons-material";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 
 export interface LogEntry {
   type: "info" | "success" | "error";
@@ -31,6 +29,17 @@ const DownloadLog: React.FC<DownloadLogProps> = ({
   onClose,
 }) => {
   const { scrollContainerRef, handleScroll } = useAutoScroll([logs], { threshold: 5 });
+  
+  // Additional effect to ensure scroll to bottom when logs change
+  React.useEffect(() => {
+    if (scrollContainerRef.current && logs.length > 0) {
+      const scrollContainer = scrollContainerRef.current;
+      // Use setTimeout to ensure DOM has updated
+      setTimeout(() => {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }, 0);
+    }
+  }, [logs]);
 
   const getIcon = (type: LogEntry["type"]) => {
     switch (type) {
@@ -49,28 +58,17 @@ const DownloadLog: React.FC<DownloadLogProps> = ({
   };
 
   return (
-    <Paper
-      elevation={3}
+    <Box
       sx={{
         height: "100%",
         width: "100%",
-        minHeight: "400px",
-        maxHeight: "80vh",
+        minHeight: "300px",
+        maxHeight: "325px",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
       }}
     >
-      <Box sx={{p: 2, borderBottom: 1, borderColor: "divider", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-        <Typography variant="h6" component="h3">
-          Download Log
-        </Typography>
-        {onClose && (
-          <IconButton onClick={onClose} size="small" sx={{color: "white"}}>
-            <Close />
-          </IconButton>
-        )}
-      </Box>
       <Box
         ref={scrollContainerRef}
         onScroll={handleScroll}
@@ -139,7 +137,7 @@ const DownloadLog: React.FC<DownloadLogProps> = ({
           </List>
         )}
       </Box>
-    </Paper>
+    </Box>
   );
 };
 

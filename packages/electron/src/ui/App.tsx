@@ -1,7 +1,8 @@
 import React from "react";
 import {ThemeProvider, createTheme, CssBaseline, Box} from "@mui/material";
-import ConfigForm from "./components/ConfigForm";
-import backgroundImage from "./racing-cars-background.png";
+import { MainContent } from "./components/MainContent";
+import { SettingsProvider, P1DoksProvider, ServiceProvider } from "./contexts";
+import { useSettings } from "./contexts/SettingsContext";
 import "./index.css";
 
 const theme = createTheme({
@@ -118,7 +119,10 @@ const theme = createTheme({
   },
 });
 
-const App: React.FC = () => {
+// Inner component that has access to all contexts
+const AppContent: React.FC = () => {
+  const { settings } = useSettings();
+  
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -129,7 +133,7 @@ const App: React.FC = () => {
           left: 0,
           width: "100%",
           height: "100%",
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url('${settings.backgroundImage}')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
@@ -147,8 +151,22 @@ const App: React.FC = () => {
           zIndex: -1,
         }}
       />
-      <ConfigForm />
+      
+      {/* Main Content - Shows service selection or app content */}
+      <MainContent />
     </ThemeProvider>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ServiceProvider>
+      <SettingsProvider>
+        <P1DoksProvider>
+          <AppContent />
+        </P1DoksProvider>
+      </SettingsProvider>
+    </ServiceProvider>
   );
 };
 

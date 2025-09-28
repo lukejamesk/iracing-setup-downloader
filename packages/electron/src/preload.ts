@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("download-setups", config),
   cancelDownload: () => ipcRenderer.invoke("cancel-download"),
   selectFolder: () => ipcRenderer.invoke("select-folder"),
+  openFolder: (path: string) => ipcRenderer.invoke("open-folder", path),
   onDownloadProgress: (callback: (progress: any) => void) => {
     ipcRenderer.on("download-progress", (event, progress) =>
       callback(progress)

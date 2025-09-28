@@ -13,9 +13,8 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "jsx": "react-jsx",
-    "allowImportingTsExtensions": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "ui-dist", "src/ui/**/*"]
