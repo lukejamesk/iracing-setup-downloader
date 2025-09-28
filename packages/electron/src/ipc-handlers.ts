@@ -19,12 +19,6 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
   ipcMain.handle("download-setups", async (event, config: Config) => {
     console.log('Received config:', JSON.stringify(config, null, 2));
     
-    // Expand tilde in download path if present
-    if (config.downloadPath.startsWith('~/')) {
-      const os = require('os');
-      const path = require('path');
-      config.downloadPath = path.join(os.homedir(), config.downloadPath.slice(2));
-    }
     
     const senderId = event.sender.id;
     const controller = new AbortController();
