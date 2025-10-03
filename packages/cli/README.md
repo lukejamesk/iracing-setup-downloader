@@ -1,6 +1,6 @@
 # @p1doks-downloader/cli
 
-Cross-platform command-line interface for the P1Doks downloader. Works on Windows, Linux, and macOS.
+Cross-platform command-line interface for the iRacing setup downloader. Works on Windows, Linux, and macOS.
 
 ## Installation
 

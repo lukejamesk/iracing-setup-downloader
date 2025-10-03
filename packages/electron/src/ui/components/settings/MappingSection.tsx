@@ -23,7 +23,7 @@ import {
   FileUpload as ImportIcon,
 } from '@mui/icons-material';
 import { Mapping } from '../../contexts';
-import { ComboButton } from '../common';
+import { ComboButton, AddMappingModal } from '../common';
 
 interface MappingSectionProps {
   title: string;
@@ -55,19 +55,27 @@ const MappingSection: React.FC<MappingSectionProps> = ({
   allowDelete = true, // Default to allowing deletion
 }) => {
   // Dialog state
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number>(-1);
+  const [addMappingModalOpen, setAddMappingModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'car' | 'track'>('car');
   
-  // Form state
+  // Form state for edit dialog
   const [p1doksValue, setP1doksValue] = useState('');
   const [iracingValue, setIracingValue] = useState('');
+  const [duplicateError, setDuplicateError] = useState('');
 
-  const handleAdd = () => {
-    onAdd(p1doksValue, iracingValue);
-    setP1doksValue('');
-    setIracingValue('');
-    setAddDialogOpen(false);
+  // Handle opening the add mapping modal
+  const handleOpenAddMappingModal = () => {
+    setModalType(title.toLowerCase().includes('car') ? 'car' : 'track');
+    setAddMappingModalOpen(true);
+  };
+
+  // Handle mapping added from modal
+  const handleMappingAdded = (type: 'car' | 'track', p1doksName: string) => {
+    // This will be called when the modal adds a mapping
+    // The modal handles the actual adding, so we just close our modal
+    setAddMappingModalOpen(false);
   };
 
   const handleEdit = (index: number) => {
@@ -92,7 +100,6 @@ const MappingSection: React.FC<MappingSectionProps> = ({
     setP1doksValue('');
     setIracingValue('');
     setEditingIndex(-1);
-    setAddDialogOpen(false);
     setEditDialogOpen(false);
   };
 
@@ -188,7 +195,7 @@ const MappingSection: React.FC<MappingSectionProps> = ({
           <ComboButton
             primaryLabel="Add"
             primaryIcon={<AddIcon />}
-            primaryOnClick={() => setAddDialogOpen(true)}
+            primaryOnClick={handleOpenAddMappingModal}
             options={[
               {
                 label: 'Export',
@@ -315,84 +322,13 @@ const MappingSection: React.FC<MappingSectionProps> = ({
         </List>
       </Paper>
 
-      {/* Add Mapping Dialog */}
-      <Dialog 
-        open={addDialogOpen} 
-        onClose={handleCancel} 
-        maxWidth="sm" 
-        fullWidth
-        PaperProps={{
-          sx: {
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-          }
-        }}
-      >
-        <DialogTitle sx={{ color: 'white' }}>
-          Add {title.slice(0, -1)} Mapping
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-            <TextField
-              fullWidth
-              label={p1doksLabel}
-              value={p1doksValue}
-              onChange={(e) => setP1doksValue(e.target.value)}
-              variant="outlined"
-              placeholder={p1doksPlaceholder}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.7)' },
-                  '&.Mui-focused fieldset': { borderColor: 'white' },
-                },
-                '& .MuiInputLabel-root': {
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  '&.Mui-focused': { color: 'white' },
-                },
-              }}
-            />
-            <TextField
-              fullWidth
-              label={iracingLabel}
-              value={iracingValue}
-              onChange={(e) => setIracingValue(e.target.value)}
-              variant="outlined"
-              placeholder={iracingPlaceholder}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.7)' },
-                  '&.Mui-focused fieldset': { borderColor: 'white' },
-                },
-                '& .MuiInputLabel-root': {
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  '&.Mui-focused': { color: 'white' },
-                },
-              }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancel} sx={{ color: 'white' }}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleAdd} 
-            variant="contained"
-            disabled={!p1doksValue || !iracingValue}
-            sx={{
-              backgroundColor: 'rgba(25, 118, 210, 0.8)',
-              '&:hover': { backgroundColor: 'rgba(25, 118, 210, 1)' },
-            }}
-          >
-            Add Mapping
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Add Mapping Modal */}
+      <AddMappingModal
+        open={addMappingModalOpen}
+        onClose={() => setAddMappingModalOpen(false)}
+        type={modalType}
+        onMappingAdded={handleMappingAdded}
+      />
 
       {/* Edit Mapping Dialog */}
       <Dialog 

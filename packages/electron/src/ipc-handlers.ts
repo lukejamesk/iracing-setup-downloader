@@ -1,6 +1,8 @@
 import {ipcMain, dialog, BrowserWindow, shell} from "electron";
 import {runDownload, Config, DownloadProgress} from "@p1doks-downloader/p1doks-download";
 import {Browser} from "playwright-core";
+import * as fs from "fs";
+import * as path from "path";
 
 // Store active download controllers and browser instances by sender ID
 const activeDownloads = new Map<
@@ -14,6 +16,7 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
   ipcMain.removeAllListeners("cancel-download");
   ipcMain.removeAllListeners("select-folder");
   ipcMain.removeAllListeners("open-folder");
+  ipcMain.removeAllListeners("rename-folders-for-mapping");
 
   // IPC handler for download functionality
   ipcMain.handle("download-setups", async (event, config: Config) => {
@@ -115,6 +118,109 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
     } catch (error) {
       console.error("Error opening folder:", error);
       return {success: false, error: "Failed to open folder"};
+    }
+  });
+
+  // Helper function to recursively merge directories
+  const mergeDirectories = (src: string, dest: string) => {
+    if (!fs.existsSync(src)) return;
+    
+    // Create destination directory if it doesn't exist
+    if (!fs.existsSync(dest)) {
+      fs.mkdirSync(dest, { recursive: true });
+    }
+    
+    const items = fs.readdirSync(src, { withFileTypes: true });
+    
+    for (const item of items) {
+      const srcPath = path.join(src, item.name);
+      const destPath = path.join(dest, item.name);
+      
+      if (item.isDirectory()) {
+        // Recursively merge subdirectories
+        mergeDirectories(srcPath, destPath);
+      } else {
+        // Copy files (don't overwrite existing files)
+        if (!fs.existsSync(destPath)) {
+          fs.copyFileSync(srcPath, destPath);
+        }
+      }
+    }
+  };
+
+  // IPC handler for renaming folders when a mapping is added
+  ipcMain.handle("rename-folders-for-mapping", async (event, params: {
+    downloadPath: string;
+    type: 'car' | 'track';
+    oldName: string;
+    newName: string;
+    teams: Array<{name: string}>;
+    year: string;
+    season: string;
+  }) => {
+    try {
+      const { downloadPath, type, oldName, newName, teams, year, season } = params;
+      
+      
+      if (type === 'car') {
+        // For car mappings, rename the entire car folder: {downloadPath}/{oldName} to {downloadPath}/{newName}
+        // This folder contains all teams and seasons for this car
+        const oldCarFolder = path.join(downloadPath, oldName);
+        const newCarFolder = path.join(downloadPath, newName);
+        
+        
+        if (fs.existsSync(oldCarFolder)) {
+          if (fs.existsSync(newCarFolder)) {
+            // Merge the old folder contents into the existing new folder
+            mergeDirectories(oldCarFolder, newCarFolder);
+            // Remove the old folder after successful merge
+            fs.rmSync(oldCarFolder, { recursive: true, force: true });
+          } else {
+            // Simply rename if the new folder doesn't exist
+            fs.renameSync(oldCarFolder, newCarFolder);
+          }
+        }
+      } else {
+        // For track mappings, we need to loop through each team and car combination
+        // Track structure: {downloadPath}/{car}/{team}/{year} Season {season}/{track}/p1doks
+        
+        for (const team of teams) {
+          
+          // Get all car folders in the download path
+          const carFolders = fs.readdirSync(downloadPath, { withFileTypes: true })
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name);
+          
+          
+          for (const carFolder of carFolders) {
+            const teamSeasonPath = path.join(downloadPath, carFolder, team.name, `${year} Season ${season}`);
+            
+            if (fs.existsSync(teamSeasonPath)) {
+              // Look for the old track folder
+              const oldTrackFolder = path.join(teamSeasonPath, oldName);
+              const newTrackFolder = path.join(teamSeasonPath, newName);
+              
+              
+              if (fs.existsSync(oldTrackFolder)) {
+                if (fs.existsSync(newTrackFolder)) {
+                  // Merge the old track folder contents into the existing new track folder
+                  mergeDirectories(oldTrackFolder, newTrackFolder);
+                  // Remove the old track folder after successful merge
+                  fs.rmSync(oldTrackFolder, { recursive: true, force: true });
+                } else {
+                  // Simply rename if the new track folder doesn't exist
+                  fs.renameSync(oldTrackFolder, newTrackFolder);
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      return {success: true};
+    } catch (error) {
+      console.error("Error renaming folders:", error);
+      return {success: false, error: `Failed to rename folders: ${error instanceof Error ? error.message : String(error)}`};
     }
   });
 };

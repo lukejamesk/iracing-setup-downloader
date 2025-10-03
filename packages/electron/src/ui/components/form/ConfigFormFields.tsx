@@ -93,6 +93,7 @@ const ConfigFormFields: React.FC<ConfigFormFieldsProps> = ({
 
   // Default series options from the image (alphabetically ordered)
   const defaultSeriesOptions = [
+    "All Setups",
     "Algarve 1000",
     "Creventic",
     "F3",

@@ -19,14 +19,17 @@ import {
   FolderOpen as FolderOpenIcon,
 } from "@mui/icons-material";
 import ConfigFormFields from "./ConfigFormFields";
-import { DownloadLog } from "../common";
-import { useSettings, useP1Doks } from "../../contexts";
+import { DownloadLog, MappingWarningsAlert } from "../common";
 
 // Download progress interface
 interface DownloadProgress {
-  type: "info" | "success" | "error";
+  type: "info" | "success" | "error" | "warning";
   message: string;
   timestamp: Date;
+  mappingInfo?: {
+    unmappedCars: string[];
+    unmappedTracks: string[];
+  };
 }
 
 interface P1DoksDownloadStepperProps {
@@ -38,6 +41,12 @@ interface P1DoksDownloadStepperProps {
   onOpenSettings: () => void;
   onReset?: () => void;
   downloadPath?: string;
+  mappingWarnings?: {
+    unmappedCars: string[];
+    unmappedTracks: string[];
+  } | null;
+  onRemoveFromMappingWarnings?: (type: 'car' | 'track', itemName: string) => void;
+  onIgnoreMapping?: (type: 'car' | 'track', itemName: string) => void;
 }
 
 const P1DoksDownloadStepper: React.FC<P1DoksDownloadStepperProps> = ({
@@ -49,9 +58,10 @@ const P1DoksDownloadStepper: React.FC<P1DoksDownloadStepperProps> = ({
   onOpenSettings,
   onReset,
   downloadPath,
+  mappingWarnings,
+  onRemoveFromMappingWarnings,
+  onIgnoreMapping,
 }) => {
-  const { settings: generalSettings } = useSettings();
-  const { settings: p1doksSettings } = useP1Doks();
 
   // Determine current step based on state
   const getCurrentStep = () => {
@@ -161,6 +171,15 @@ const P1DoksDownloadStepper: React.FC<P1DoksDownloadStepperProps> = ({
       description: "Download process finished",
       content: (
         <Box>
+          {/* Mapping Warnings */}
+          {mappingWarnings && (mappingWarnings.unmappedCars.length > 0 || mappingWarnings.unmappedTracks.length > 0) && (
+            <MappingWarningsAlert
+              mappingWarnings={mappingWarnings}
+              onRemoveFromMappingWarnings={onRemoveFromMappingWarnings}
+              onIgnoreMapping={onIgnoreMapping}
+            />
+          )}
+          
           {downloadPath && (
             <Button
               variant="outlined"
@@ -281,6 +300,7 @@ const P1DoksDownloadStepper: React.FC<P1DoksDownloadStepperProps> = ({
           ))}
         </Stepper>
       </Box>
+      
     </Paper>
   );
 };

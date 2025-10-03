@@ -8,13 +8,17 @@ import {
   Divider,
   CircularProgress,
 } from "@mui/material";
-import {CheckCircle, Info, Error} from "@mui/icons-material";
+import {CheckCircle, Info, Error, Warning} from "@mui/icons-material";
 import { useAutoScroll } from "../../hooks/useAutoScroll";
 
 export interface LogEntry {
-  type: "info" | "success" | "error";
+  type: "info" | "success" | "error" | "warning";
   message: string;
   timestamp: Date;
+  mappingInfo?: {
+    unmappedCars: string[];
+    unmappedTracks: string[];
+  };
 }
 
 interface DownloadLogProps {
@@ -47,6 +51,8 @@ const DownloadLog: React.FC<DownloadLogProps> = ({
         return <CheckCircle color="success" fontSize="small" />;
       case "error":
         return <Error color="error" fontSize="small" />;
+      case "warning":
+        return <Warning color="warning" fontSize="small" />;
       default:
         return <Info color="info" fontSize="small" />;
     }

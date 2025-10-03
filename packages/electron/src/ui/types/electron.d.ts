@@ -1,9 +1,13 @@
 // Type definitions for Electron API exposed through preload script
 
 interface DownloadProgress {
-  type: "info" | "success" | "error";
+  type: "info" | "success" | "error" | "warning";
   message: string;
   timestamp: Date;
+  mappingInfo?: {
+    unmappedCars: string[];
+    unmappedTracks: string[];
+  };
 }
 
 interface DownloadResult {
@@ -24,6 +28,15 @@ interface ElectronAPI {
   cancelDownload: () => Promise<{success: boolean; error?: string}>;
   selectFolder: () => Promise<FolderResult>;
   openFolder: (path: string) => Promise<{success: boolean; error?: string}>;
+  renameFoldersForMapping: (params: {
+    downloadPath: string;
+    type: 'car' | 'track';
+    oldName: string;
+    newName: string;
+    teams: Array<{name: string}>;
+    year: string;
+    season: string;
+  }) => Promise<{success: boolean; error?: string}>;
   onDownloadProgress: (callback: (progress: DownloadProgress) => void) => void;
   removeDownloadProgressListener: () => void;
 }

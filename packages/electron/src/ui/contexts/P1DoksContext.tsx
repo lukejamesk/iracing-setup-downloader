@@ -51,6 +51,30 @@ const defaultSettings: P1DoksSettings = {
     { p1doks: "Mercedes-AMG GT3 2020", iracing: "mercedesamgevogt3", isDefault: true },
     { p1doks: "Porsche 911 GT3 R (992)", iracing: "porsche992rgt3", isDefault: true },
     { p1doks: "Aston Martin GT3", iracing: "amvantageevogt3", isDefault: true },
+    { p1doks: "Super Formula Lights  Open Wheel", iracing: "superformulalights324", isDefault: true },
+    { p1doks: "IR18 IndyCar  Open Wheel", iracing: "dallarair18", isDefault: true },
+    { p1doks: "SF23", iracing: "superformulasf23 honda", isDefault: true },
+    { p1doks: "Porsche 911 RSR GTE", iracing: "porsche991rsr", isDefault: true },
+    { p1doks: "Chevrolet Corvette C8.R GTE", iracing: "c8rvettegte", isDefault: true },
+    { p1doks: "BMW M8 GTE", iracing: "bmwm8gte", isDefault: true },
+    { p1doks: "Ligier JS P320 LMP3", iracing: "ligierjsp320", isDefault: true },
+    { p1doks: "Porsche 963 GTP", iracing: "porsche963gtp", isDefault: true },
+    { p1doks: "Cadillac V-Series R GTP", iracing: "cadillacvseriesrgtp", isDefault: true },
+    { p1doks: "Acura ARX-06 GTP", iracing: "acuraarx06gtp", isDefault: true },
+    { p1doks: "Ferrari 499P GTP", iracing: "ferrari499p", isDefault: true },
+    { p1doks: "Porsche 718 Cayman GT4 Clubsport MR", iracing: "porsche718gt4", isDefault: true },
+    { p1doks: "McLaren 570S GT4", iracing: "mclaren570sgt4", isDefault: true },
+    { p1doks: "Ford Mustang GT4", iracing: "fordmustanggt4", isDefault: true },
+    { p1doks: "Aston Martin Vantage GT4", iracing: "amvantagegt4", isDefault: true },
+    { p1doks: "Mercedes GT4", iracing: "mercedesamggt4", isDefault: true },
+    { p1doks: "BMW M4 GT4", iracing: "bmwm4gt4", isDefault: true },
+    { p1doks: "Dallara P217 (LMP2)", iracing: "dallarap217", isDefault: true },
+    { p1doks: "Honda Civic Type R TCR", iracing: "hondacivictyper", isDefault: true },
+    { p1doks: "Hyundai Elantra N TCR", iracing: "hyundaielantracn7", isDefault: true },
+    { p1doks: "Global Mazda MX-5 Cup", iracing: "mx5 cup", isDefault: true },
+    { p1doks: "BMW M2 CS", iracing: "bmwm2csr", isDefault: true },
+    { p1doks: "Porsche Cup 992", iracing: "porsche992cup", isDefault: true },
+    { p1doks: "BMW M Hybrid V8 GTP", iracing: "bmwlmdh", isDefault: true },
   ],
   trackMappings: [],
 };
@@ -139,10 +163,14 @@ export const P1DoksProvider: React.FC<P1DoksProviderProps> = ({ children }) => {
 
   const addCarMapping = (p1doks: string, iracing: string) => {
     if (p1doks && iracing) {
-      setSettings(prev => ({
-        ...prev,
-        carMappings: [...prev.carMappings, { p1doks, iracing }]
-      }));
+      setSettings(prev => {
+        const newMappings = [...prev.carMappings, { p1doks, iracing }];
+        return {
+          ...prev,
+          carMappings: newMappings
+        };
+      });
+    } else {
     }
   };
 

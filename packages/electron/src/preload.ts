@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   cancelDownload: () => ipcRenderer.invoke("cancel-download"),
   selectFolder: () => ipcRenderer.invoke("select-folder"),
   openFolder: (path: string) => ipcRenderer.invoke("open-folder", path),
+  renameFoldersForMapping: (params: any) => ipcRenderer.invoke("rename-folders-for-mapping", params),
   onDownloadProgress: (callback: (progress: any) => void) => {
     ipcRenderer.on("download-progress", (event, progress) =>
       callback(progress)

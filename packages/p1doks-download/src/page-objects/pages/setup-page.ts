@@ -38,7 +38,7 @@ export class SetupPage extends LoggedInPage {
             .locator(".border.border-border.rounded-lg.divide-y > div")
             .filter({
               hasText: text,
-            })
+            }).first()
         )
       );
     }

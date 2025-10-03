@@ -6,14 +6,18 @@ import { useSettings, useP1Doks } from "../../contexts";
 
 // Download progress interface for UI
 interface DownloadProgress {
-  type: "info" | "success" | "error";
+  type: "info" | "success" | "error" | "warning";
   message: string;
   timestamp: Date;
+  mappingInfo?: {
+    unmappedCars: string[];
+    unmappedTracks: string[];
+  };
 }
 
 
 const P1DoksDownloadPage: React.FC = () => {
-  const { settings: generalSettings, activeTeam } = useSettings();
+  const { settings: generalSettings } = useSettings();
   const { settings: p1doksSettings } = useP1Doks();
   
   const [message, setMessage] = useState<{
@@ -26,6 +30,101 @@ const P1DoksDownloadPage: React.FC = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [showSetupAlert, setShowSetupAlert] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  
+  // Track mapping warnings
+  const [mappingWarnings, setMappingWarnings] = useState<{
+    unmappedCars: string[];
+    unmappedTracks: string[];
+  } | null>(null);
+
+  // Store last download configuration for folder renaming
+  const [lastDownloadConfig, setLastDownloadConfig] = useState<{
+    teams: Array<{name: string}>;
+    year: string;
+    season: string;
+    downloadPath: string;
+  } | null>(null);
+
+  // Track pending folder renames
+  const [pendingRenames, setPendingRenames] = useState<Array<{type: 'car' | 'track', itemName: string}>>([]);
+
+  // Effect to handle folder renaming when mappings are updated
+  useEffect(() => {
+    if (pendingRenames.length > 0 && lastDownloadConfig) {
+      
+      pendingRenames.forEach(async ({ type, itemName }) => {
+        try {
+          const mappings = type === 'car' ? p1doksSettings.carMappings : p1doksSettings.trackMappings;
+          const mapping = mappings.find(m => m.p1doks === itemName);
+          
+          if (mapping) {
+            const renameParams = {
+              downloadPath: lastDownloadConfig.downloadPath,
+              type: type,
+              oldName: itemName,
+              newName: mapping.iracing,
+              teams: lastDownloadConfig.teams,
+              year: lastDownloadConfig.year,
+              season: lastDownloadConfig.season,
+            };
+            
+            const result = await window.electronAPI.renameFoldersForMapping(renameParams);
+
+            if (result.success) {
+            } else {
+            }
+          } else {
+          }
+        } catch (error) {
+        }
+      });
+      
+      // Clear pending renames
+      setPendingRenames([]);
+    }
+  }, [p1doksSettings.carMappings, p1doksSettings.trackMappings, pendingRenames, lastDownloadConfig]);
+
+  // Function to remove an item from mapping warnings and rename folders
+  const removeFromMappingWarnings = async (type: 'car' | 'track', itemName: string) => {
+    
+    // First, update the UI state
+    setMappingWarnings(prev => {
+      if (!prev) return null;
+      
+      if (type === 'car') {
+        const updatedCars = prev.unmappedCars.filter(car => car !== itemName);
+        const hasUnmappedItems = updatedCars.length > 0 || prev.unmappedTracks.length > 0;
+        return hasUnmappedItems ? { ...prev, unmappedCars: updatedCars } : null;
+      } else {
+        const updatedTracks = prev.unmappedTracks.filter(track => track !== itemName);
+        const hasUnmappedItems = prev.unmappedCars.length > 0 || updatedTracks.length > 0;
+        return hasUnmappedItems ? { ...prev, unmappedTracks: updatedTracks } : null;
+      }
+    });
+
+    // Add to pending renames to be processed when mappings update
+    if (lastDownloadConfig && lastDownloadConfig.teams.length > 0) {
+      setPendingRenames(prev => [...prev, { type, itemName }]);
+    }
+  };
+
+  // Handle ignoring mappings (no folder renaming needed)
+  const ignoreMapping = (type: 'car' | 'track', itemName: string) => {
+    // Just update the UI state - no folder renaming since we're mapping to the same name
+    setMappingWarnings(prev => {
+      if (!prev) return null;
+      
+      if (type === 'car') {
+        const updatedCars = prev.unmappedCars.filter(car => car !== itemName);
+        const hasUnmappedItems = updatedCars.length > 0 || prev.unmappedTracks.length > 0;
+        return hasUnmappedItems ? { ...prev, unmappedCars: updatedCars } : null;
+      } else {
+        const updatedTracks = prev.unmappedTracks.filter(track => track !== itemName);
+        const hasUnmappedItems = prev.unmappedCars.length > 0 || updatedTracks.length > 0;
+        return hasUnmappedItems ? { ...prev, unmappedTracks: updatedTracks } : null;
+      }
+    });
+  };
 
   // Check if required settings are missing
   useEffect(() => {
@@ -43,6 +142,11 @@ const P1DoksDownloadPage: React.FC = () => {
     if (window.electronAPI?.onDownloadProgress) {
       window.electronAPI.onDownloadProgress((progress: DownloadProgress) => {
         setLogs(prev => [...prev, progress]);
+        
+        // Capture mapping warnings
+        if (progress.type === "warning" && progress.mappingInfo) {
+          setMappingWarnings(progress.mappingInfo);
+        }
       });
     }
 
@@ -66,6 +170,7 @@ const P1DoksDownloadPage: React.FC = () => {
     setIsDownloading(false);
     setLogs([]);
     setMessage(null);
+    setMappingWarnings(null);
   };
 
   const handleDownload = async (config: any): Promise<{completed: boolean}> => {
@@ -73,6 +178,15 @@ const P1DoksDownloadPage: React.FC = () => {
     
     setIsDownloading(true);
     setLogs([]); // Clear previous logs
+    setMappingWarnings(null); // Clear previous mapping warnings
+    
+    // Store the download configuration for potential folder renaming
+    setLastDownloadConfig({
+      teams: config.selectedTeams || [],
+      year: config.year || '',
+      season: config.season || '',
+      downloadPath: config.downloadPath || generalSettings.downloadPath,
+    });
     
     try {
       // Add initial log
@@ -187,6 +301,9 @@ const P1DoksDownloadPage: React.FC = () => {
         onOpenSettings={handleOpenSettings}
         onReset={handleReset}
         downloadPath={generalSettings.downloadPath}
+        mappingWarnings={mappingWarnings}
+        onRemoveFromMappingWarnings={removeFromMappingWarnings}
+        onIgnoreMapping={ignoreMapping}
       />
       
       {/* Success/Error Messages */}

@@ -6,19 +6,31 @@ import {SetupPage} from "./page-objects/pages/setup-page";
 import path from "path";
 import fs from "fs";
 // Helper functions to apply mappings from config
-const applyCarMapping = (car: string, mappings?: Record<string, string>): string => {
-  return mappings?.[car] || car;
+const applyCarMapping = (car: string, mappings?: Record<string, string>): { mapped: string; wasMapped: boolean } => {
+  if (mappings?.[car]) {
+    return { mapped: mappings[car], wasMapped: true };
+  } else {
+    return { mapped: car, wasMapped: false };
+  }
 };
 
-const applyTrackMapping = (track: string, mappings?: Record<string, string>): string => {
-  return mappings?.[track] || track;
+const applyTrackMapping = (track: string, mappings?: Record<string, string>): { mapped: string; wasMapped: boolean } => {
+  if (mappings?.[track]) {
+    return { mapped: mappings[track], wasMapped: true };
+  } else {
+    return { mapped: track, wasMapped: false };
+  }
 };
 
 
 export interface DownloadProgress {
-  type: "info" | "success" | "error";
+  type: "info" | "success" | "error" | "warning";
   message: string;
   timestamp: Date;
+  mappingInfo?: {
+    unmappedCars: string[];
+    unmappedTracks: string[];
+  };
 }
 
 // Helper function to check if operation was cancelled
@@ -53,6 +65,9 @@ export const downloadSetups = async (
   onProgress?: (progress: DownloadProgress) => void,
   signal?: AbortSignal
 ) => {
+  // Track unmapped items
+  const unmappedCars = new Set<string>();
+  const unmappedTracks = new Set<string>();
   // Check for cancellation before starting
   checkCancellation(signal);
 
@@ -112,17 +127,36 @@ export const downloadSetups = async (
 
   onProgress?.({
     type: "info",
-    message: "Searching for setup cards...",
-    timestamp: new Date(),
-  });
-  const cards = await marketplacePage.getCards();
-  onProgress?.({
-    type: "info",
-    message: `Found ${cards.length} setup cards`,
+    message: "Searching for setup cards across all pages...",
     timestamp: new Date(),
   });
 
-  for (const card of cards) {
+  // Process each page individually to maintain page context
+  let totalCards = 0;
+  let currentPage = 1;
+  
+  while (true) {
+    // Check for cancellation before processing each page
+    if (signal?.aborted) {
+      throw new Error("Download cancelled");
+    }
+
+    onProgress?.({
+      type: "info",
+      message: `Processing page ${currentPage}...`,
+      timestamp: new Date(),
+    });
+
+    const cards = await marketplacePage.getCards();
+    totalCards += cards.length;
+    
+    onProgress?.({
+      type: "info",
+      message: `Found ${cards.length} setup cards on page ${currentPage}`,
+      timestamp: new Date(),
+    });
+
+    for (const card of cards) {
     // Check for cancellation before processing each card
     if (signal?.aborted) {
       throw new Error("Download cancelled");
@@ -167,8 +201,19 @@ export const downloadSetups = async (
         timestamp: new Date(),
       });
 
-      const mappedCar = applyCarMapping(details.car, config.mappings?.carP1DoksToIracing);
-      const mappedTrack = applyTrackMapping(details.track, config.mappings?.trackP1DoksToWBR);
+      const carMappingResult = applyCarMapping(details.car, config.mappings?.carP1DoksToIracing);
+      const trackMappingResult = applyTrackMapping(details.track, config.mappings?.trackP1DoksToWBR);
+      
+      const mappedCar = carMappingResult.mapped;
+      const mappedTrack = trackMappingResult.mapped;
+      
+      // Track unmapped items
+      if (!carMappingResult.wasMapped) {
+        unmappedCars.add(details.car);
+      }
+      if (!trackMappingResult.wasMapped) {
+        unmappedTracks.add(details.track);
+      }
 
       // Download for each selected team
       for (const team of config.selectedTeams) {
@@ -195,7 +240,23 @@ export const downloadSetups = async (
     }
     await waitFor(500);
     await secondPage.close();
+    }
+
+    // Check if there's a next page, if not break the loop
+    if (!(await marketplacePage.hasNextPage())) {
+      break;
+    }
+
+    // Move to next page
+    await marketplacePage.goToNextPage();
+    currentPage++;
   }
+
+  onProgress?.({
+    type: "info",
+    message: `Completed processing all pages. Total cards processed: ${totalCards}`,
+    timestamp: new Date(),
+  });
 
   // Only show completion message if not cancelled
   if (!signal?.aborted) {
@@ -204,6 +265,19 @@ export const downloadSetups = async (
 
     // Final cancellation check
     if (!signal?.aborted) {
+      // Report unmapped items if any
+      if (unmappedCars.size > 0 || unmappedTracks.size > 0) {
+        onProgress?.({
+          type: "warning",
+          message: `Found ${unmappedCars.size} unmapped cars and ${unmappedTracks.size} unmapped tracks`,
+          timestamp: new Date(),
+          mappingInfo: {
+            unmappedCars: Array.from(unmappedCars),
+            unmappedTracks: Array.from(unmappedTracks),
+          },
+        });
+      }
+
       onProgress?.({
         type: "success",
         message: "Download process completed!",

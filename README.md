@@ -1,6 +1,6 @@
-# P1Doks Downloader
+# iRacing Setup Downloader
 
-A Windows desktop application for downloading and managing P1Doks setups for iRacing. Built with Electron and React, providing a modern graphical user interface.
+A Windows desktop application for downloading and managing iRacing setups. Built with Electron and React, providing a modern graphical user interface.
 
 **⚠️ Electron App**: The desktop application currently only works on Windows 10/11. However, the CLI works cross-platform on Windows, Linux, and macOS.
 
@@ -38,7 +38,7 @@ npm run clean
 
 ## CLI Package
 
-The CLI package provides a cross-platform command-line interface for the downloader that works on Windows, Linux, and macOS:
+The CLI package provides a cross-platform command-line interface for the iRacing setup downloader that works on Windows, Linux, and macOS:
 
 ```bash
 # Interactive setup wizard
@@ -57,7 +57,7 @@ cd packages/cli && npm start -- download --email user@example.com --password sec
 
 ## Core Package
 
-The core package (`@p1doks-downloader/p1doks-download`) contains the main downloader functionality as a library. It's designed to be used by other packages (like the Electron app) rather than run directly.
+The core package (`@p1doks-downloader/p1doks-download`) contains the main iRacing setup downloader functionality as a library. It's designed to be used by other packages (like the Electron app) rather than run directly.
 
 ```typescript
 import {runDownload, Config} from "@p1doks-downloader/p1doks-download";
@@ -129,7 +129,7 @@ This means you can:
 
 ## Desktop Application (Primary Interface)
 
-The main application is a Windows desktop app built with Electron and React. This is the recommended way to use the P1Doks downloader:
+The main application is a Windows desktop app built with Electron and React. This is the recommended way to use the iRacing setup downloader:
 
 ### Running the Desktop App
 
@@ -160,8 +160,8 @@ npm run dev:electron
 npm run dev:electron
 ```
 
-The Electron app provides a modern graphical interface for downloading P1Doks setups, with features like:
-- Service selection interface (P1Doks and future services)
+The Electron app provides a modern graphical interface for downloading iRacing setups, with features like:
+- Service selection interface (iRacing setup services)
 - Interactive configuration forms with validation
 - Real-time download progress tracking
 - Download history and logs

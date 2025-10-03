@@ -1,12 +1,12 @@
 # Packages
 
-This directory contains all the packages in the P1Doks downloader monorepo.
+This directory contains all the packages in the iRacing setup downloader monorepo.
 
 ## Current Packages
 
 ### @p1doks-downloader/p1doks-download
 
-Core functionality for downloading and managing P1Doks setups. Contains the main business logic, page objects, and utilities. This package provides the core download functionality used by other packages.
+Core functionality for downloading and managing iRacing setups. Contains the main business logic, page objects, and utilities. This package provides the core download functionality used by other packages.
 
 ### @p1doks-downloader/cli
 
@@ -14,11 +14,11 @@ Cross-platform command-line interface application that provides a user-friendly 
 
 ### @p1doks-downloader/electron
 
-Desktop application built with Electron that provides a native desktop experience for Windows users. This is the primary and recommended interface for using the P1Doks downloader.
+Desktop application built with Electron that provides a native desktop experience for Windows users. This is the primary and recommended interface for using the iRacing setup downloader.
 
 **Features:**
 - Modern React-based UI with Material-UI components
-- Service selection interface (P1Doks and future services)
+- Service selection interface (iRacing setup services)
 - Interactive configuration forms with validation
 - Real-time download progress tracking
 - Settings management with custom backgrounds

@@ -1,6 +1,6 @@
-# P1Doks Downloader - Electron Package
+# iRacing Setup Downloader - Electron Package
 
-A Windows desktop application for the P1Doks downloader built with Electron and React. This is the primary and recommended interface for using the P1Doks downloader.
+A Windows desktop application for the iRacing setup downloader built with Electron and React. This is the primary and recommended interface for using the iRacing setup downloader.
 
 **⚠️ Windows Only**: This application currently only works on Windows 10/11.
 
@@ -116,7 +116,7 @@ The Electron app integrates with the core downloader functionality through the `
 
 ## Current Status
 
-The Electron application is the primary interface for the P1Doks downloader and includes:
+The Electron application is the primary interface for the iRacing setup downloader and includes:
 
 - ✅ Service selection interface
 - ✅ Interactive configuration forms with validation

@@ -49,6 +49,27 @@ export class MarketplacePage extends LoggedInPage {
     return this.page.locator(".grid .group");
   }
 
+  get paginationContainer(): Locator {
+    // Look for the flex container with gap-2 that contains pagination buttons
+    return this.page.locator(".flex.items-center.gap-2");
+  }
+
+  get paginationButtons(): Locator {
+    return this.paginationContainer.locator("button");
+  }
+
+  get nextPageButton(): Locator {
+    return this.paginationButtons.filter({ hasText: "Next page" }).first();
+  }
+
+  get previousPageButton(): Locator {
+    return this.paginationButtons.filter({ hasText: "Previous page" }).first();
+  }
+
+  get currentPageButton(): Locator {
+    return this.paginationButtons.filter({ hasText: "bg-blue-500" }).first();
+  }
+
   constructor(public page: Page) {
     super(page);
   }
@@ -90,6 +111,109 @@ export class MarketplacePage extends LoggedInPage {
 
     await this.applyFilterButton.click();
     await waitFor(1000);
+  }
+
+  async hasPagination(): Promise<boolean> {
+    try {
+      // Look for pagination container
+      const paginationContainers = await this.page.locator(".flex.items-center.gap-2").all();
+      
+      for (let i = 0; i < paginationContainers.length; i++) {
+        const container = paginationContainers[i];
+        
+        // Check if this container has both Previous and Next page buttons
+        const hasPrevious = await container.locator("button:has-text('Previous page')").count() > 0;
+        const hasNext = await container.locator("button:has-text('Next page')").count() > 0;
+        
+        if (hasPrevious && hasNext) {
+          // Count numbered buttons
+          const buttons = await container.locator("button").all();
+          let numberedButtons = 0;
+          
+          for (const button of buttons) {
+            const text = await button.textContent();
+            if (text && /^\d+$/.test(text.trim())) {
+              numberedButtons++;
+            }
+          }
+          
+          // If there are multiple numbered buttons, there's pagination
+          if (numberedButtons > 1) {
+            return true;
+          }
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async hasNextPage(): Promise<boolean> {
+    try {
+      // Look for pagination containers
+      const paginationContainers = await this.page.locator(".flex.items-center.gap-2").all();
+      
+      for (let i = 0; i < paginationContainers.length; i++) {
+        const container = paginationContainers[i];
+        
+        // Check if this container has both Previous and Next page buttons
+        const hasPrevious = await container.locator("button:has-text('Previous page')").count() > 0;
+        const hasNext = await container.locator("button:has-text('Next page')").count() > 0;
+        
+        if (hasPrevious && hasNext) {
+          const nextButton = container.locator("button:has-text('Next page')").first();
+          const isDisabled = await nextButton.isDisabled();
+          return !isDisabled;
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async goToNextPage(): Promise<void> {
+    // Look for pagination containers
+    const paginationContainers = await this.page.locator(".flex.items-center.gap-2").all();
+    
+    for (let i = 0; i < paginationContainers.length; i++) {
+      const container = paginationContainers[i];
+      
+      // Check if this container has both Previous and Next page buttons
+      const hasPrevious = await container.locator("button:has-text('Previous page')").count() > 0;
+      const hasNext = await container.locator("button:has-text('Next page')").count() > 0;
+      
+      if (hasPrevious && hasNext) {
+        const nextButton = container.locator("button:has-text('Next page')").first();
+        const isDisabled = await nextButton.isDisabled();
+        
+        if (!isDisabled) {
+          await nextButton.click();
+          await waitFor(1000); // Wait for page to load
+          return;
+        }
+      }
+    }
+  }
+
+  async getAllCards(): Promise<SetupCardElement[]> {
+    const allCards: SetupCardElement[] = [];
+    
+    // Get cards from the first page
+    let currentPageCards = await this.getCards();
+    allCards.push(...currentPageCards);
+    
+    // Check if there's pagination and navigate through all pages
+    while (await this.hasNextPage()) {
+      await this.goToNextPage();
+      currentPageCards = await this.getCards();
+      allCards.push(...currentPageCards);
+    }
+    
+    return allCards;
   }
 
   async getCards(): Promise<SetupCardElement[]> {
