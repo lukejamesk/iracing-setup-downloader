@@ -1,27 +1,27 @@
 {
-  "name": "p1doks-downloader-monorepo",
+  "name": "iracing-setup-downloader-monorepo",
   "version": "1.0.0",
-  "description": "P1Doks downloader monorepo with CLI and Electron desktop app",
+  "description": "iRacing setup downloader monorepo with CLI and Electron desktop app",
   "private": true,
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "build:core": "npm run build --workspace=@p1doks-downloader/p1doks-download",
-    "build:cli": "npm run build --workspace=@p1doks-downloader/cli",
-    "build:electron": "npm run build --workspace=@p1doks-downloader/electron",
+    "build:core": "npm run build --workspace=@iracing-setup-downloader/p1doks-download",
+    "build:cli": "npm run build --workspace=@iracing-setup-downloader/cli",
+    "build:electron": "npm run build --workspace=@iracing-setup-downloader/electron",
     "clean": "npm run clean --workspaces && rm -rf node_modules",
     "clean:all": "rm -rf node_modules packages/*/node_modules packages/*/dist",
     "install:all": "npm install",
     "test": "npm run test --workspaces",
-    "dev:core": "npm run dev --workspace=@p1doks-downloader/p1doks-download",
-    "dev:cli": "npm run dev --workspace=@p1doks-downloader/cli",
-    "dev:electron": "npm run dev:electron-only --workspace=@p1doks-downloader/electron",
-    "dev:ui": "npm run dev:ui --workspace=@p1doks-downloader/electron",
-    "cli": "npm run start --workspace=@p1doks-downloader/cli --",
-    "electron": "npm run start --workspace=@p1doks-downloader/electron",
-    "dist:electron": "npm run dist --workspace=@p1doks-downloader/electron"
+    "dev:core": "npm run dev --workspace=@iracing-setup-downloader/p1doks-download",
+    "dev:cli": "npm run dev --workspace=@iracing-setup-downloader/cli",
+    "dev:electron": "npm run dev:electron-only --workspace=@iracing-setup-downloader/electron",
+    "dev:ui": "npm run dev:ui --workspace=@iracing-setup-downloader/electron",
+    "cli": "npm run start --workspace=@iracing-setup-downloader/cli --",
+    "electron": "npm run start --workspace=@iracing-setup-downloader/electron",
+    "dist:electron": "npm run dist --workspace=@iracing-setup-downloader/electron"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

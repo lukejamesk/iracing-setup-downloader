@@ -1,5 +1,5 @@
 import {ipcMain, dialog, BrowserWindow, shell} from "electron";
-import {runDownload, Config, DownloadProgress} from "@p1doks-downloader/p1doks-download";
+import {runDownload, Config, DownloadProgress} from "@iracing-setup-downloader/p1doks-download";
 import {Browser} from "playwright-core";
 import * as fs from "fs";
 import * as path from "path";

@@ -1,10 +1,10 @@
 {
-  "name": "@p1doks-downloader/cli",
+  "name": "@iracing-setup-downloader/cli",
   "version": "1.0.0",
-  "description": "Command-line interface for P1Doks downloader",
+  "description": "Command-line interface for iRacing setup downloader",
   "main": "dist/index.js",
   "bin": {
-    "p1doks": "dist/index.js"
+    "iracing-setup-downloader": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -13,7 +13,7 @@
     "start": "npm run build && node dist/index.js"
   },
   "dependencies": {
-    "@p1doks-downloader/p1doks-download": "*",
+    "@iracing-setup-downloader/p1doks-download": "*",
     "commander": "^12.0.0",
     "inquirer": "^8.2.6"
   },
@@ -28,7 +28,6 @@
     "README.md"
   ],
   "keywords": [
-    "p1doks",
     "iracing",
     "setup",
     "downloader",

@@ -1,4 +1,4 @@
-import {Config} from "@p1doks-downloader/p1doks-download";
+import {Config} from "@iracing-setup-downloader/p1doks-download";
 import {loadConfig} from "./config-file";
 import {DEFAULT_CAR_MAPPINGS, DEFAULT_TRACK_MAPPINGS} from "../constants/default-mappings";
 

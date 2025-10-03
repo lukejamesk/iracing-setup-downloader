@@ -1,7 +1,7 @@
 {
-  "name": "@p1doks-downloader/electron",
+  "name": "@iracing-setup-downloader/electron",
   "version": "0.0.1",
-  "description": "Electron GUI for P1Doks downloader",
+  "description": "Electron GUI for iRacing setup downloader",
   "main": "dist/main.js",
   "scripts": {
     "build": "npm run generate-icons && npm run install-playwright && npm run build:ui && tsc",
@@ -17,7 +17,7 @@
     "dist": "npm run build && npm run create-prod-package && electron-builder --win"
   },
   "dependencies": {
-    "@p1doks-downloader/p1doks-download": "*",
+    "@iracing-setup-downloader/p1doks-download": "*",
     "playwright-core": "^1.54.2"
   },
   "devDependencies": {
@@ -47,7 +47,6 @@
     "README.md"
   ],
   "keywords": [
-    "p1doks",
     "iracing",
     "setup",
     "downloader",
@@ -57,8 +56,8 @@
   "author": "",
   "license": "ISC",
   "build": {
-    "appId": "com.p1doks.downloader",
-    "productName": "P1Doks Downloaderc",
+    "appId": "com.iracing.setup.downloader",
+    "productName": "iRacing Setup Downloader",
     "directories": {
       "output": "release"
     },
@@ -77,7 +76,7 @@
       "!src/ui/**/*"
     ],
     "asarUnpack": [
-      "node_modules/@p1doks-downloader/p1doks-download/**/*",
+      "node_modules/@iracing-setup-downloader/p1doks-download/**/*",
       "node_modules/playwright-core/.local-browsers/**/*"
     ],
     "compression": "maximum",

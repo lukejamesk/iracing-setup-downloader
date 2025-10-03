@@ -4,14 +4,14 @@ import {downloadCommand, setupCommand, configCommand} from "./commands";
 export const createCLI = (): Command => {
   const program = new Command();
 
-  program.name("p1doks").description("P1Doks downloader CLI").version("1.0.0");
+  program.name("iracing-setup-downloader").description("iRacing setup downloader CLI").version("1.0.0");
 
   // Download command
   program
     .command("download")
-    .description("Download setups from P1Doks")
-    .option("-e, --email <email>", "P1Doks email")
-    .option("-p, --password <password>", "P1Doks password")
+    .description("Download iRacing setups")
+    .option("-e, --email <email>", "iRacing email")
+    .option("-p, --password <password>", "iRacing password")
     .option("-s, --series <series>", 'Series name (e.g., "GT Sprint")')
     .option("--season <season>", 'Season (e.g., "1")')
     .option("--week <week>", 'Week (e.g., "1")')

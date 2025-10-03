@@ -1,4 +1,4 @@
-import {Config} from "@p1doks-downloader/p1doks-download";
+import {Config} from "@iracing-setup-downloader/p1doks-download";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -14,7 +14,7 @@ export interface CLIConfig extends Config {
   };
 }
 
-const DEFAULT_CONFIG_DIR = path.join(os.homedir(), ".config", "p1doks");
+const DEFAULT_CONFIG_DIR = path.join(os.homedir(), ".config", "iracing-setup-downloader");
 const DEFAULT_CONFIG_FILE = path.join(DEFAULT_CONFIG_DIR, "config.json");
 
 export const getConfigPath = (customPath?: string): string => {

@@ -6,9 +6,9 @@ A Windows desktop application for downloading and managing iRacing setups. Built
 
 ## Packages
 
-- **@p1doks-downloader/p1doks-download** - Core downloader functionality
-- **@p1doks-downloader/cli** - Cross-platform command-line interface
-- **@p1doks-downloader/electron** - Windows desktop application with integrated React UI (primary interface)
+- **@iracing-setup-downloader/p1doks-download** - Core downloader functionality
+- **@iracing-setup-downloader/cli** - Cross-platform command-line interface
+- **@iracing-setup-downloader/electron** - Windows desktop application with integrated React UI (primary interface)
 
 ## Getting Started
 
@@ -57,10 +57,10 @@ cd packages/cli && npm start -- download --email user@example.com --password sec
 
 ## Core Package
 
-The core package (`@p1doks-downloader/p1doks-download`) contains the main iRacing setup downloader functionality as a library. It's designed to be used by other packages (like the Electron app) rather than run directly.
+The core package (`@iracing-setup-downloader/p1doks-download`) contains the main iRacing setup downloader functionality as a library. It's designed to be used by other packages (like the Electron app) rather than run directly.
 
 ```typescript
-import {runDownload, Config} from "@p1doks-downloader/p1doks-download";
+import {runDownload, Config} from "@iracing-setup-downloader/p1doks-download";
 
 const config: Config = {
   email: "user@example.com",
@@ -86,14 +86,14 @@ The CLI supports configuration through:
 
 ### Configuration File
 
-The CLI uses a configuration file located at `~/.config/p1doks/config.json` by default. You can specify a custom path using the `--config` option. You can create this file using the interactive setup:
+The CLI uses a configuration file located at `~/.config/iracing-setup-downloader/config.json` by default. You can specify a custom path using the `--config` option. You can create this file using the interactive setup:
 
 ```bash
 # Create config in default location
-p1doks setup
+iracing-setup-downloader setup
 
 # Create config in custom location
-p1doks setup --config /path/to/custom/config.json
+iracing-setup-downloader setup --config /path/to/custom/config.json
 ```
 
 Or manually create the file with the following structure:
@@ -113,7 +113,7 @@ Or manually create the file with the following structure:
 
 ### Last Used Values
 
-The CLI automatically remembers the last used Series, Season, Week, and Year values for convenience. When you run `p1doks download` without specifying these parameters, it will use the values from your last successful download.
+The CLI automatically remembers the last used Series, Season, Week, and Year values for convenience. When you run `iracing-setup-downloader download` without specifying these parameters, it will use the values from your last successful download.
 
 **Priority order:**
 
@@ -123,8 +123,8 @@ The CLI automatically remembers the last used Series, Season, Week, and Year val
 
 This means you can:
 
-- Run `p1doks download` to repeat your last download
-- Override specific values: `p1doks download --season 2` (uses last used series, week, year)
+- Run `iracing-setup-downloader download` to repeat your last download
+- Override specific values: `iracing-setup-downloader download --season 2` (uses last used series, week, year)
 - Always override with full command line options
 
 ## Desktop Application (Primary Interface)
@@ -173,8 +173,8 @@ The Electron app provides a modern graphical interface for downloading iRacing s
 
 ```
 ├── packages/
-│   ├── p1doks-download/    # Core downloader functionality
-│   ├── cli/                # CLI application (may not be working)
+│   ├── core/               # Core downloader functionality (p1doks-download package)
+│   ├── cli/                # CLI application
 │   └── electron/           # Desktop application with integrated React UI
 │       ├── src/
 │       │   ├── ui/         # React UI components and pages

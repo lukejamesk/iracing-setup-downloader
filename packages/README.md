@@ -4,15 +4,15 @@ This directory contains all the packages in the iRacing setup downloader monorep
 
 ## Current Packages
 
-### @p1doks-downloader/p1doks-download
+### @iracing-setup-downloader/p1doks-download
 
 Core functionality for downloading and managing iRacing setups. Contains the main business logic, page objects, and utilities. This package provides the core download functionality used by other packages.
 
-### @p1doks-downloader/cli
+### @iracing-setup-downloader/cli
 
 Cross-platform command-line interface application that provides a user-friendly CLI for the core functionality. Works on Windows, Linux, and macOS.
 
-### @p1doks-downloader/electron
+### @iracing-setup-downloader/electron
 
 Desktop application built with Electron that provides a native desktop experience for Windows users. This is the primary and recommended interface for using the iRacing setup downloader.
 

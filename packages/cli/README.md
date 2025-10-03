@@ -1,11 +1,11 @@
-# @p1doks-downloader/cli
+# @iracing-setup-downloader/cli
 
 Cross-platform command-line interface for the iRacing setup downloader. Works on Windows, Linux, and macOS.
 
 ## Installation
 
 ```bash
-npm install -g @p1doks-downloader/cli
+npm install -g @iracing-setup-downloader/cli
 ```
 
 ## Cross-Platform Support
@@ -32,7 +32,7 @@ npm start -- download
 #### Download Command
 
 ```bash
-p1doks download [options]
+iracing-setup-downloader download [options]
 ```
 
 Options:
@@ -49,14 +49,14 @@ Options:
 
 ### Configuration File
 
-The CLI uses a configuration file located at `~/.config/p1doks/config.json` by default. You can specify a custom path using the `--config` option. You can create this file using the interactive setup:
+The CLI uses a configuration file located at `~/.config/iracing-setup-downloader/config.json` by default. You can specify a custom path using the `--config` option. You can create this file using the interactive setup:
 
 ```bash
 # Create config in default location
-p1doks setup
+iracing-setup-downloader setup
 
 # Create config in custom location
-p1doks setup --config /path/to/custom/config.json
+iracing-setup-downloader setup --config /path/to/custom/config.json
 ```
 
 Or manually create the file with the following structure:
@@ -76,7 +76,7 @@ Or manually create the file with the following structure:
 
 ### Last Used Values
 
-The CLI automatically remembers the last used Series, Season, Week, and Year values for convenience. When you run `p1doks download` without specifying these parameters, it will use the values from your last successful download.
+The CLI automatically remembers the last used Series, Season, Week, and Year values for convenience. When you run `iracing-setup-downloader download` without specifying these parameters, it will use the values from your last successful download.
 
 **Priority order:**
 
@@ -86,51 +86,51 @@ The CLI automatically remembers the last used Series, Season, Week, and Year val
 
 This means you can:
 
-- Run `p1doks download` to repeat your last download
-- Override specific values: `p1doks download --season 2` (uses last used series, week, year)
+- Run `iracing-setup-downloader download` to repeat your last download
+- Override specific values: `iracing-setup-downloader download --season 2` (uses last used series, week, year)
 - Always override with full command line options
 
 ### Examples
 
 ```bash
 # Download with command line options (use quotes for values with spaces)
-p1doks download --email user@example.com --password secret --series "GT Sprint" --season "1" --week "1" --team "My Team" --year 2025
+iracing-setup-downloader download --email user@example.com --password secret --series "GT Sprint" --season "1" --week "1" --team "My Team" --year 2025
 
 # Download with series names containing spaces (PowerShell - use underscores, recommended)
-p1doks download --email user@example.com --password secret --series Porsche_Cup --team My_Racing_Team --season 2 --week 3 --year 2025
+iracing-setup-downloader download --email user@example.com --password secret --series Porsche_Cup --team My_Racing_Team --season 2 --week 3 --year 2025
 
 # Download with series names containing spaces (PowerShell - use single quotes)
-p1doks download --email user@example.com --password secret --series 'Porsche Cup' --team 'My Racing Team' --season '2' --week '3' --year '2025'
+iracing-setup-downloader download --email user@example.com --password secret --series 'Porsche Cup' --team 'My Racing Team' --season '2' --week '3' --year '2025'
 
 # Download with series names containing spaces (Command Prompt/Bash - use double quotes)
-p1doks download --email user@example.com --password secret --series "Porsche Cup" --team "My Racing Team" --season "2" --week "3" --year "2025"
+iracing-setup-downloader download --email user@example.com --password secret --series "Porsche Cup" --team "My Racing Team" --season "2" --week "3" --year "2025"
 
 # Download with default config file
-p1doks download
+iracing-setup-downloader download
 
 # Download using last used values (convenient for repeated downloads)
-p1doks download --email user@example.com --password secret
+iracing-setup-downloader download --email user@example.com --password secret
 
 # Override specific values while using last used for others
-p1doks download --email user@example.com --password secret --season 2
+iracing-setup-downloader download --email user@example.com --password secret --season 2
 
 # Download with custom config file
-p1doks download --config /path/to/custom/config.json
+iracing-setup-downloader download --config /path/to/custom/config.json
 
 # Interactive setup (default location)
-p1doks setup
+iracing-setup-downloader setup
 
 # Interactive setup (custom location)
-p1doks setup --config /path/to/custom/config.json
+iracing-setup-downloader setup --config /path/to/custom/config.json
 
 # Show current configuration
-p1doks config
+iracing-setup-downloader config
 
 # Show configuration from custom file
-p1doks config --config /path/to/custom/config.json
+iracing-setup-downloader config --config /path/to/custom/config.json
 
 # Run in non-headless mode (shows browser)
-p1doks download --headless=false
+iracing-setup-downloader download --headless=false
 ```
 
 ### Important Notes

@@ -1,4 +1,4 @@
-import {runDownload, DownloadProgress} from "@p1doks-downloader/p1doks-download";
+import {runDownload, DownloadProgress} from "@iracing-setup-downloader/p1doks-download";
 import {getConfig, updateLastUsed} from "../utils";
 
 export const downloadCommand = async (options: any) => {

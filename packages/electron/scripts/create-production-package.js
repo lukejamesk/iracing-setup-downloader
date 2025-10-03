@@ -19,8 +19,8 @@ const createProductionPackage = () => {
     main: packageJson.main,
     dependencies: {
       // Only include the core package dependency
-      "@p1doks-downloader/p1doks-download":
-        packageJson.dependencies["@p1doks-downloader/p1doks-download"],
+      "@iracing-setup-downloader/p1doks-download":
+        packageJson.dependencies["@iracing-setup-downloader/p1doks-download"],
     },
     // Remove all devDependencies, scripts, and build config
     // This will be used during the build process

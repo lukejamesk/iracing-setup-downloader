@@ -13,7 +13,7 @@ A Windows desktop application for the iRacing setup downloader built with Electr
 - **Real-time Progress**: Live download progress tracking and status updates
 - **Settings Management**: Customizable backgrounds, folder selection, and preferences
 - **File Management**: Downloaded files tree view and folder management
-- **Core Integration**: Uses the `@p1doks-downloader/p1doks-download` package for download functionality
+- **Core Integration**: Uses the `@iracing-setup-downloader/p1doks-download` package for download functionality
 - **Hot Reloading**: Development mode with hot reloading for UI changes
 
 ## Development
@@ -108,7 +108,7 @@ packages/electron/
 
 ## Integration with Core
 
-The Electron app integrates with the core downloader functionality through the `@p1doks-downloader/p1doks-download` package. This allows the GUI to:
+The Electron app integrates with the core downloader functionality through the `@iracing-setup-downloader/p1doks-download` package. This allows the GUI to:
 
 - Use the same download logic as the CLI
 - Maintain consistency across different interfaces
