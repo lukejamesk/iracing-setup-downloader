@@ -1,5 +1,5 @@
 {
-  "name": "@iracing-setup-downloader/core",
+  "name": "@iracing-setup-downloader/p1doks-download",
   "version": "1.0.0",
   "description": "Core iRacing setup downloader functionality",
   "main": "dist/index.js",
