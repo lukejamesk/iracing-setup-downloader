@@ -6,28 +6,24 @@ import {
   Grid,
   TextField,
 } from '@mui/material';
-import { useP1Doks } from '../../contexts';
+import { useHymo } from '../../contexts';
 import MappingSection from './MappingSection';
 
-const P1DoksSettings: React.FC = () => {
+const HymoSettings: React.FC = () => {
   const { 
     settings, 
-    updateEmail, 
+    updateLogin, 
     updatePassword, 
-    addCarMapping, 
-    removeCarMapping,
-    editCarMapping,
-    replaceCarMappings,
     addTrackMapping,
     removeTrackMapping,
     editTrackMapping,
     replaceTrackMappings
-  } = useP1Doks();
+  } = useHymo();
 
   return (
     <Box>
       <Typography variant="h6" sx={{ color: 'white', mb: 3 }}>
-        P1Doks Settings
+        Hymo Settings
       </Typography>
 
       {/* Credentials Section */}
@@ -42,33 +38,30 @@ const P1DoksSettings: React.FC = () => {
         }}
       >
         <Typography variant="h6" sx={{ color: 'white', mb: 2 }}>
-          P1Doks Credentials
+          Hymo Credentials
         </Typography>
         
         <Typography variant="body2" sx={{ color: 'white', opacity: 0.7, mb: 3 }}>
-          Your P1Doks login credentials for downloading setups
+          Your Hymo login credentials for downloading setups
         </Typography>
 
         <Grid container spacing={3}>
-          {/* Email */}
-          <Grid item xs={6}>
+          {/* Login */}
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Email"
-              type="email"
-              value={settings.email}
-              onChange={(e) => updateEmail(e.target.value)}
-              required
-              variant="outlined"
-              placeholder="Enter your P1Doks email"
+              label="Login"
+              type="text"
+              value={settings.login}
+              onChange={(e) => updateLogin(e.target.value)}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   color: 'white',
                   '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
                   },
                   '&.Mui-focused fieldset': {
                     borderColor: 'white',
@@ -85,24 +78,21 @@ const P1DoksSettings: React.FC = () => {
           </Grid>
 
           {/* Password */}
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="Password"
               type="password"
               value={settings.password}
               onChange={(e) => updatePassword(e.target.value)}
-              required
-              variant="outlined"
-              placeholder="Enter your P1Doks password"
               sx={{
                 '& .MuiOutlinedInput-root': {
                   color: 'white',
                   '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
                   },
                   '&.Mui-focused fieldset': {
                     borderColor: 'white',
@@ -119,42 +109,24 @@ const P1DoksSettings: React.FC = () => {
           </Grid>
         </Grid>
       </Paper>
-
-      {/* Car Mappings Section */}
-      <MappingSection
-        title="Car Mappings"
-        description="Map P1Doks car names to iRacing car names"
-        serviceName="P1Doks"
-        mappings={settings.carMappings}
-        onAdd={addCarMapping}
-        onEdit={editCarMapping}
-        onRemove={removeCarMapping}
-        onReplace={replaceCarMappings}
-        serviceLabel="P1Doks Car Name"
-        iracingLabel="iRacing Car Name"
-        servicePlaceholder="e.g., Mercedes-AMG GT3 2020"
-        iracingPlaceholder="e.g., mercedesamgevogt3"
-        allowDelete={false}
-      />
-
       {/* Track Mappings Section */}
       <MappingSection
         title="Track Mappings"
-        description="Map P1Doks track names to setup folder track names"
-        serviceName="P1Doks"
+        description="Map Hymo track names to iRacing track names for automatic setup downloads"
+        serviceName="Hymo"
         mappings={settings.trackMappings}
         onAdd={addTrackMapping}
         onEdit={editTrackMapping}
         onRemove={removeTrackMapping}
         onReplace={replaceTrackMappings}
-        serviceLabel="P1Doks Track Name"
-        iracingLabel="Setup Track Name"
-        servicePlaceholder="e.g., Silverstone Circuit"
-        iracingPlaceholder="e.g., Silverstone Circuit - Grand Prix"
+        serviceLabel="Hymo Track Name"
+        iracingLabel="iRacing Track Name"
+        servicePlaceholder="e.g., Spa-Francorchamps"
+        iracingPlaceholder="e.g., spa"
+        allowDelete={true}
       />
-
     </Box>
   );
 };
 
-export default P1DoksSettings;
+export default HymoSettings;

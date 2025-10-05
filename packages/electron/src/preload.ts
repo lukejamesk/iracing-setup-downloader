@@ -3,8 +3,8 @@ import {contextBridge, ipcRenderer} from "electron";
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld("electronAPI", {
-  downloadSetups: (config: any) =>
-    ipcRenderer.invoke("download-setups", config),
+  downloadSetups: (service: string, config: any) =>
+    ipcRenderer.invoke("download-setups", service, config),
   cancelDownload: () => ipcRenderer.invoke("cancel-download"),
   selectFolder: () => ipcRenderer.invoke("select-folder"),
   openFolder: (path: string) => ipcRenderer.invoke("open-folder", path),
@@ -16,5 +16,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   removeDownloadProgressListener: () => {
     ipcRenderer.removeAllListeners("download-progress");
+  },
+  onDownloadCompleted: (callback: (completionInfo: any) => void) => {
+    ipcRenderer.on("download-completed", (event, completionInfo) =>
+      callback(completionInfo)
+    );
+  },
+  removeDownloadCompletedListener: () => {
+    ipcRenderer.removeAllListeners("download-completed");
   },
 });

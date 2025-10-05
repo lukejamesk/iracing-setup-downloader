@@ -7,8 +7,17 @@ import {
 } from '@mui/material';
 import ServiceCard from './ServiceCard';
 import { SettingsIcon, SettingsDrawer } from '../settings';
+
 // Use relative path for public assets
 const p1doksLogo = './p1doks.png';
+const hymoLogo = './hymosetups.jpeg';
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  logoUrl: string;
+}
 
 interface ServiceSelectionProps {
   onServiceSelect: (service: string) => void;
@@ -25,13 +34,18 @@ const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onServiceSelect }) 
     setSettingsOpen(false);
   };
 
-  const services = [
+  const services: Service[] = [
     {
       id: 'p1doks',
       name: 'P1Doks',
       description: 'Download iRacing setups from P1Doks',
       logoUrl: p1doksLogo,
-      isAvailable: true,
+    },
+    {
+      id: 'hymo',
+      name: 'Hymo',
+      description: 'Download iRacing setups from Hymo',
+      logoUrl: hymoLogo,
     },
     // Future services can be added here
     // {
@@ -39,7 +53,6 @@ const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onServiceSelect }) 
     //   name: 'VRS',
     //   description: 'Virtual Racing School setups and data',
     //   logoUrl: '/vrs.png',
-    //   isAvailable: false,
     // },
   ];
 
@@ -100,7 +113,6 @@ const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onServiceSelect }) 
               description={service.description}
               logoUrl={service.logoUrl}
               onClick={() => onServiceSelect(service.id)}
-              isAvailable={service.isAvailable}
             />
           </Grid>
         ))}

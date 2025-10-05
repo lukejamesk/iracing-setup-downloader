@@ -10,7 +10,7 @@ export type Config = {
   season: string;
   year: string;
   week: string;
-  selectedTeams: Team[];
+  selectedTeams: (Team | string)[];
   downloadPath: string;
   runHeadless?: boolean;
   // Mapping configurations for P1Doks to iRacing conversions

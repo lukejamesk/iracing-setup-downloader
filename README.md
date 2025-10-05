@@ -7,6 +7,7 @@ A Windows desktop application for downloading and managing iRacing setups. Built
 ## Packages
 
 - **@iracing-setup-downloader/p1doks-download** - Core downloader functionality
+- **@iracing-setup-downloader/hymo-download** - Hymo/TrackTitan downloader functionality
 - **@iracing-setup-downloader/cli** - Cross-platform command-line interface
 - **@iracing-setup-downloader/electron** - Windows desktop application with integrated React UI (primary interface)
 
@@ -55,7 +56,9 @@ cd packages/cli && npm start -- download --email user@example.com --password sec
 - **PowerShell**: Use single quotes `'Porsche Cup'`, `'My Racing Team'`
 - **Command Prompt/Bash**: Use double quotes `"Porsche Cup"`, `"My Racing Team"`
 
-## Core Package
+## Core Packages
+
+### P1Doks Download Package
 
 The core package (`@iracing-setup-downloader/p1doks-download`) contains the main iRacing setup downloader functionality as a library. It's designed to be used by other packages (like the Electron app) rather than run directly.
 
@@ -74,6 +77,23 @@ const config: Config = {
 };
 
 await runDownload(config);
+```
+
+### Hymo Download Package
+
+The Hymo package (`@iracing-setup-downloader/hymo-download`) provides functionality to download setup files from Hymo (TrackTitan) for iRacing.
+
+**Environment Variables Required for Testing:**
+- `HYMO_LOGIN`: Your Hymo/TrackTitan login email
+- `HYMO_PASSWORD`: Your Hymo/TrackTitan password
+
+```bash
+# Set environment variables
+export HYMO_LOGIN="your-email@example.com"
+export HYMO_PASSWORD="your-password"
+
+# Run the test
+cd packages/hymo-download && npm test
 ```
 
 ## Configuration
@@ -173,7 +193,8 @@ The Electron app provides a modern graphical interface for downloading iRacing s
 
 ```
 ├── packages/
-│   ├── core/               # Core downloader functionality (p1doks-download package)
+│   ├── p1doks-download/    # Core downloader functionality
+│   ├── hymo-download/      # Hymo/TrackTitan downloader functionality
 │   ├── cli/                # CLI application
 │   └── electron/           # Desktop application with integrated React UI
 │       ├── src/

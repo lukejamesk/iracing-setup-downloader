@@ -18,27 +18,31 @@ import {
   Error as ErrorIcon,
   FolderOpen as FolderOpenIcon,
 } from "@mui/icons-material";
-import ConfigFormFields from "./ConfigFormFields";
 import { DownloadLog, MappingWarningsAlert } from "../common";
+import { useSettings } from "../../contexts";
 
 // Download progress interface
 interface DownloadProgress {
   type: "info" | "success" | "error" | "warning";
   message: string;
   timestamp: Date;
-  mappingInfo?: {
-    unmappedCars: string[];
-    unmappedTracks: string[];
-  };
 }
 
-interface P1DoksDownloadStepperProps {
+interface FormData {
+  series: string;
+  season: string;
+  year: string;
+  week: string;
+  runHeadless: boolean;
+}
+
+interface DownloadStepperProps {
+  serviceName: string;
   onDownload: (config: any) => Promise<{completed: boolean}>;
   onCancel: () => Promise<void>;
   logs: DownloadProgress[];
   isDownloading: boolean;
   showSetupAlert: boolean;
-  onOpenSettings: () => void;
   onReset?: () => void;
   downloadPath?: string;
   mappingWarnings?: {
@@ -47,21 +51,35 @@ interface P1DoksDownloadStepperProps {
   } | null;
   onRemoveFromMappingWarnings?: (type: 'car' | 'track', itemName: string) => void;
   onIgnoreMapping?: (type: 'car' | 'track', itemName: string) => void;
+  configFormComponent: React.ComponentType<{
+    onDownload: (formData: FormData) => Promise<{completed: boolean}>;
+    onCancel?: () => void;
+  }>;
+  // Functions to get service-specific data
+  getServiceSettings: () => any;
+  getMappings: (settings: any) => {
+    carMappings?: any[];
+    trackMappings?: any[];
+  };
 }
 
-const P1DoksDownloadStepper: React.FC<P1DoksDownloadStepperProps> = ({
+const DownloadStepper: React.FC<DownloadStepperProps> = ({
+  serviceName,
   onDownload,
   onCancel,
   logs,
   isDownloading,
   showSetupAlert,
-  onOpenSettings,
   onReset,
   downloadPath,
   mappingWarnings,
   onRemoveFromMappingWarnings,
   onIgnoreMapping,
+  configFormComponent: ConfigFormComponent,
+  getServiceSettings,
+  getMappings,
 }) => {
+  const { settings: generalSettings } = useSettings();
 
   // Determine current step based on state
   const getCurrentStep = () => {
@@ -112,13 +130,63 @@ const P1DoksDownloadStepper: React.FC<P1DoksDownloadStepperProps> = ({
               </Typography>
             </Alert>
           )}
-          <ConfigFormFields onDownload={onDownload} onCancel={onCancel} />
+          <ConfigFormComponent 
+            onDownload={async (formData: FormData) => {
+              // Combine form data with service settings and mappings
+              const serviceSettings = getServiceSettings();
+              const mappings = getMappings(serviceSettings);
+              
+              // Create full config object
+              const selectedTeams = generalSettings.teams || [];
+              const config = {
+                // From form data
+                series: formData.series,
+                season: formData.season,
+                week: formData.week,
+                year: formData.year,
+                runHeadless: formData.runHeadless,
+                
+                // From service settings
+                email: serviceSettings.email || '',
+                login: serviceSettings.login || '',
+                password: serviceSettings.password,
+                teamName: selectedTeams.length > 0 ? selectedTeams[0] : '',
+                
+                // From general settings
+                downloadPath: downloadPath || '',
+                selectedTeams: selectedTeams,
+                
+                // Mappings
+                mappings: {
+                  ...(mappings.carMappings ? {
+                    carP1DoksToIracing: mappings.carMappings.reduce((acc, mapping) => {
+                      acc[mapping.p1doks] = mapping.iracing;
+                      return acc;
+                    }, {} as Record<string, string>)
+                  } : {}),
+                  ...(mappings.trackMappings ? {
+                    trackP1DoksToWBR: mappings.trackMappings.reduce((acc, mapping) => {
+                      acc[mapping.p1doks] = mapping.iracing;
+                      return acc;
+                    }, {} as Record<string, string>),
+                    trackHymoToIracing: mappings.trackMappings.reduce((acc, mapping) => {
+                      acc[mapping.p1doks] = mapping.iracing;
+                      return acc;
+                    }, {} as Record<string, string>)
+                  } : {}),
+                },
+              };
+
+              return await onDownload(config);
+            }} 
+            onCancel={onCancel} 
+          />
         </Box>
       ),
     },
     {
       label: "Downloading",
-      description: "Downloading setups from P1Doks",
+      description: `Downloading setups from ${serviceName}`,
       content: (
         <Box sx={{ width: "100%" }}>
           <DownloadLog logs={logs} isDownloading={isDownloading} />
@@ -174,6 +242,7 @@ const P1DoksDownloadStepper: React.FC<P1DoksDownloadStepperProps> = ({
           {/* Mapping Warnings */}
           {mappingWarnings && (mappingWarnings.unmappedCars.length > 0 || mappingWarnings.unmappedTracks.length > 0) && (
             <MappingWarningsAlert
+              serviceName={serviceName}
               mappingWarnings={mappingWarnings}
               onRemoveFromMappingWarnings={onRemoveFromMappingWarnings}
               onIgnoreMapping={onIgnoreMapping}
@@ -240,7 +309,7 @@ const P1DoksDownloadStepper: React.FC<P1DoksDownloadStepperProps> = ({
     >
       <Box sx={{ p: 3, flex: 1, overflow: 'auto' }}>
         <Typography variant="h5" component="h2" sx={{ mb: 3, textAlign: 'center' }}>
-          P1Doks Setup Downloader
+          {serviceName} Setup Downloader
         </Typography>
         
         <Stepper 
@@ -305,4 +374,4 @@ const P1DoksDownloadStepper: React.FC<P1DoksDownloadStepperProps> = ({
   );
 };
 
-export default P1DoksDownloadStepper;
+export default DownloadStepper;

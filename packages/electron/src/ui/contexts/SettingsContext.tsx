@@ -1,15 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Define team interface
-export interface Team {
-  id: string;
-  name: string;
-}
-
 // Define the settings interface
 export interface GeneralSettings {
-  teams: Team[];
-  activeTeamId: string | null;
+  teams: string[]; // Changed from Team[] to string[] - just store team names
   downloadPath: string;
   backgroundImage: string;
 }
@@ -17,11 +10,9 @@ export interface GeneralSettings {
 // Define the context interface
 interface SettingsContextType {
   settings: GeneralSettings;
-  activeTeam: Team | null;
   addTeam: (name: string) => void;
-  updateTeam: (id: string, updates: Partial<Team>) => void;
-  removeTeam: (id: string) => void;
-  setActiveTeam: (id: string) => void;
+  updateTeam: (oldName: string, newName: string) => void; // Changed to work with names
+  removeTeam: (name: string) => void; // Changed to work with names
   updateDownloadPath: (downloadPath: string) => void;
   updateBackgroundImage: (backgroundImage: string) => void;
   updateSettings: (newSettings: Partial<GeneralSettings>) => void;
@@ -33,7 +24,6 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 // Default settings
 const defaultSettings: GeneralSettings = {
   teams: [],
-  activeTeamId: null,
   downloadPath: '', // Will be set via IPC from main process
   backgroundImage: './racing-cars-background.png',
 };
@@ -50,19 +40,6 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
       const savedSettings = localStorage.getItem('general-settings');
       if (savedSettings) {
         const parsedSettings = JSON.parse(savedSettings);
-        // Migrate old settings format if needed
-        if (parsedSettings.teamName && !parsedSettings.teams) {
-          const team: Team = {
-            id: 'default-team',
-            name: parsedSettings.teamName,
-          };
-          return {
-            ...defaultSettings,
-            ...parsedSettings,
-            teams: [team],
-            activeTeamId: 'default-team',
-          };
-        }
         return { ...defaultSettings, ...parsedSettings };
       }
     } catch (error) {
@@ -80,50 +57,27 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     }
   }, [settings]);
 
-  // Get active team
-  const activeTeam = settings.activeTeamId 
-    ? settings.teams.find(team => team.id === settings.activeTeamId) || null
-    : null;
-
-  // Team management functions
-  const addTeam = (name: string) => {
-    const newTeam: Team = {
-      id: Date.now().toString(),
-      name,
-    };
-    setSettings(prev => ({
-      ...prev,
-      teams: [...prev.teams, newTeam],
-      activeTeamId: newTeam.id,
-    }));
-  };
-
-  const updateTeam = (id: string, updates: Partial<Team>) => {
-    setSettings(prev => ({
-      ...prev,
-      teams: prev.teams.map(team => 
-        team.id === id ? { ...team, ...updates } : team
-      ),
-    }));
-  };
-
-  const removeTeam = (id: string) => {
-    setSettings(prev => {
-      const newTeams = prev.teams.filter(team => team.id !== id);
-      const newActiveTeamId = prev.activeTeamId === id 
-        ? (newTeams.length > 0 ? newTeams[0].id : null)
-        : prev.activeTeamId;
-      return {
-        ...prev,
-        teams: newTeams,
-        activeTeamId: newActiveTeamId,
+      // Team management functions
+      const addTeam = (name: string) => {
+        setSettings(prev => ({
+          ...prev,
+          teams: [...prev.teams, name],
+        }));
       };
-    });
-  };
 
-  const setActiveTeam = (id: string) => {
-    setSettings(prev => ({ ...prev, activeTeamId: id }));
-  };
+      const updateTeam = (oldName: string, newName: string) => {
+        setSettings(prev => ({
+          ...prev,
+          teams: prev.teams.map(team => team === oldName ? newName : team),
+        }));
+      };
+
+      const removeTeam = (name: string) => {
+        setSettings(prev => ({
+          ...prev,
+          teams: prev.teams.filter(team => team !== name),
+        }));
+      };
 
   const updateBackgroundImage = (backgroundImage: string) => {
     setSettings(prev => ({ ...prev, backgroundImage }));
@@ -137,17 +91,15 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
-  const contextValue: SettingsContextType = {
-    settings,
-    activeTeam,
-    addTeam,
-    updateTeam,
-    removeTeam,
-    setActiveTeam,
-    updateDownloadPath,
-    updateBackgroundImage,
-    updateSettings,
-  };
+      const contextValue: SettingsContextType = {
+        settings,
+        addTeam,
+        updateTeam,
+        removeTeam,
+        updateDownloadPath,
+        updateBackgroundImage,
+        updateSettings,
+      };
 
   return (
     <SettingsContext.Provider value={contextValue}>

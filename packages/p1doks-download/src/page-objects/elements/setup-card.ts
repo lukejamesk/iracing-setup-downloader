@@ -70,6 +70,9 @@ export class SetupCardElement {
 
   async getUrl(): Promise<string> {
     const url = await this.wrapper.getAttribute("href");
+    if (!url) {
+      throw new Error("Setup card does not have a valid href attribute");
+    }
     return `https://p1doks.com${url}`;
   }
 }

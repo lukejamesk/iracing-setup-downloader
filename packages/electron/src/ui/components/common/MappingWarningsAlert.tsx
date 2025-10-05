@@ -8,10 +8,11 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
-import { AddMappingModal } from './';
-import { useP1Doks } from '../../contexts';
+import { MappingModal } from './';
+import { useP1Doks, useHymo } from '../../contexts';
 
 interface MappingWarningsAlertProps {
+  serviceName: string; // Add service name to determine which context to use
   mappingWarnings: {
     unmappedCars: string[];
     unmappedTracks: string[];
@@ -21,11 +22,31 @@ interface MappingWarningsAlertProps {
 }
 
 const MappingWarningsAlert: React.FC<MappingWarningsAlertProps> = ({
+  serviceName,
   mappingWarnings,
   onRemoveFromMappingWarnings,
   onIgnoreMapping,
 }) => {
-  const { addTrackMapping } = useP1Doks();
+  // Use the appropriate context based on service name
+  const p1doksContext = useP1Doks();
+  const hymoContext = useHymo();
+  
+  // Get the appropriate mapping functions based on service
+  const getMappingFunctions = () => {
+    if (serviceName.toLowerCase() === 'hymo') {
+      return {
+        addCarMapping: () => {}, // Hymo doesn't have car mappings
+        addTrackMapping: hymoContext.addTrackMapping,
+      };
+    } else {
+      return {
+        addCarMapping: p1doksContext.addCarMapping,
+        addTrackMapping: p1doksContext.addTrackMapping,
+      };
+    }
+  };
+  
+  const { addCarMapping, addTrackMapping } = getMappingFunctions();
   // Modal state
   const [addMappingModalOpen, setAddMappingModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'car' | 'track'>('car');
@@ -44,9 +65,14 @@ const MappingWarningsAlert: React.FC<MappingWarningsAlertProps> = ({
     setModalP1doksName('');
   };
 
-  // Handle mapping added callback
-  const handleMappingAdded = (type: 'car' | 'track', p1doksName: string) => {
-    onRemoveFromMappingWarnings?.(type, p1doksName);
+  // Handle mapping saved callback
+  const handleMappingSaved = (serviceName: string, iracingName: string) => {
+    if (modalType === 'car') {
+      addCarMapping(serviceName, iracingName);
+    } else {
+      addTrackMapping(serviceName, iracingName);
+    }
+    onRemoveFromMappingWarnings?.(modalType, serviceName);
   };
 
   // Handle ignoring a track (add mapping to itself)
@@ -178,12 +204,20 @@ const MappingWarningsAlert: React.FC<MappingWarningsAlertProps> = ({
       </Alert>
 
       {/* Add Mapping Modal */}
-      <AddMappingModal
+      <MappingModal
         open={addMappingModalOpen}
         onClose={handleCloseAddMappingModal}
-        type={modalType}
-        p1doksName={modalP1doksName}
-        onMappingAdded={handleMappingAdded}
+        title={`${modalType === 'car' ? 'Car' : 'Track'} Mapping`}
+        serviceName={serviceName}
+        serviceLabel={`${serviceName} ${modalType === 'car' ? 'Car' : 'Track'} Name`}
+        iracingLabel={`iRacing ${modalType === 'car' ? 'Car' : 'Track'} Name`}
+        servicePlaceholder={modalType === 'car' ? 'e.g., Mercedes-AMG GT3 2020' : 'e.g., Silverstone Circuit'}
+        iracingPlaceholder={modalType === 'car' ? 'e.g., mercedesamgevogt3' : 'e.g., Silverstone Circuit - Grand Prix'}
+        mappings={[]} // Empty for this context
+        editingMapping={modalP1doksName ? { p1doks: modalP1doksName, iracing: '' } : null}
+        editingIndex={undefined}
+        onSave={handleMappingSaved}
+        disableServiceName={!!modalP1doksName} // Disable if we have a pre-filled name from step 3
       />
     </>
   );

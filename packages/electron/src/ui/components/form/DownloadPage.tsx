@@ -1,24 +1,52 @@
 import React, { useState, useEffect } from "react";
 import { Box, Snackbar, Alert } from "@mui/material";
-import P1DoksDownloadStepper from "./P1DoksDownloadStepper";
 import { SettingsDrawer } from "../settings";
-import { useSettings, useP1Doks } from "../../contexts";
+import { useSettings } from "../../contexts";
+import DownloadStepper from "./DownloadStepper";
 
 // Download progress interface for UI
 interface DownloadProgress {
   type: "info" | "success" | "error" | "warning";
   message: string;
   timestamp: Date;
-  mappingInfo?: {
-    unmappedCars: string[];
-    unmappedTracks: string[];
-  };
 }
 
+// Download completion info interface
+interface DownloadCompletionInfo {
+  unmappedCars: string[];
+  unmappedTracks: string[];
+}
 
-const P1DoksDownloadPage: React.FC = () => {
+interface DownloadPageProps {
+  serviceName: string;
+  serviceSettings: any; // The service settings object directly
+  onDownload?: (_config: any) => Promise<{completed: boolean}>;
+  onCancel?: () => Promise<void>;
+  configFormComponent: React.ComponentType<{
+    onDownload: (config: any) => Promise<{completed: boolean}>;
+    onCancel?: () => void;
+  }>;
+  downloadFunction: string; // The electron API function name to call
+  cancelFunction: string; // The electron API function name for cancellation
+  checkSettingsValid: (generalSettings: any, serviceSettings: any) => boolean;
+  getMappings: (serviceSettings: any) => {
+    carMappings: any[];
+    trackMappings: any[];
+  };
+  getServiceSettings: () => any;
+}
+
+const DownloadPage: React.FC<DownloadPageProps> = ({
+  serviceName,
+  serviceSettings,
+  configFormComponent: ConfigFormComponent,
+  downloadFunction,
+  cancelFunction,
+  checkSettingsValid,
+  getMappings,
+  getServiceSettings,
+}) => {
   const { settings: generalSettings } = useSettings();
-  const { settings: p1doksSettings } = useP1Doks();
   
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -48,13 +76,20 @@ const P1DoksDownloadPage: React.FC = () => {
   // Track pending folder renames
   const [pendingRenames, setPendingRenames] = useState<Array<{type: 'car' | 'track', itemName: string}>>([]);
 
+  // Check if required settings are missing
+  useEffect(() => {
+    const hasMissingSettings = !checkSettingsValid(generalSettings, serviceSettings);
+    setShowSetupAlert(hasMissingSettings);
+  }, [generalSettings, serviceSettings, checkSettingsValid]);
+
   // Effect to handle folder renaming when mappings are updated
   useEffect(() => {
     if (pendingRenames.length > 0 && lastDownloadConfig) {
+      const { carMappings, trackMappings } = getMappings(serviceSettings);
       
       pendingRenames.forEach(async ({ type, itemName }) => {
         try {
-          const mappings = type === 'car' ? p1doksSettings.carMappings : p1doksSettings.trackMappings;
+          const mappings = type === 'car' ? carMappings : trackMappings;
           const mapping = mappings.find(m => m.p1doks === itemName);
           
           if (mapping) {
@@ -66,27 +101,22 @@ const P1DoksDownloadPage: React.FC = () => {
               teams: lastDownloadConfig.teams,
               year: lastDownloadConfig.year,
               season: lastDownloadConfig.season,
+              service: serviceName, // Add service name for folder structure handling
             };
             
-            const result = await window.electronAPI.renameFoldersForMapping(renameParams);
-
-            if (result.success) {
-            } else {
-            }
-          } else {
+            await window.electronAPI.renameFoldersForMapping(renameParams);
           }
         } catch (error) {
+          console.error(`Error during folder rename:`, error);
         }
       });
       
-      // Clear pending renames
       setPendingRenames([]);
     }
-  }, [p1doksSettings.carMappings, p1doksSettings.trackMappings, pendingRenames, lastDownloadConfig]);
+  }, [serviceSettings, pendingRenames, lastDownloadConfig, getMappings]);
 
   // Function to remove an item from mapping warnings and rename folders
   const removeFromMappingWarnings = async (type: 'car' | 'track', itemName: string) => {
-    
     // First, update the UI state
     setMappingWarnings(prev => {
       if (!prev) return null;
@@ -126,41 +156,32 @@ const P1DoksDownloadPage: React.FC = () => {
     });
   };
 
-  // Check if required settings are missing
-  useEffect(() => {
-    const isTeamsMissing = !generalSettings.teams || generalSettings.teams.length === 0;
-    const isDownloadPathMissing = !generalSettings.downloadPath || generalSettings.downloadPath.trim() === '';
-    const isEmailMissing = !p1doksSettings.email || p1doksSettings.email.trim() === '';
-    const isPasswordMissing = !p1doksSettings.password || p1doksSettings.password.trim() === '';
-
-    const hasMissingSettings = isTeamsMissing || isDownloadPathMissing || isEmailMissing || isPasswordMissing;
-    setShowSetupAlert(hasMissingSettings);
-  }, [generalSettings, p1doksSettings]);
-
-  // Set up progress listener
+  // Set up progress and completion listeners
   useEffect(() => {
     if (window.electronAPI?.onDownloadProgress) {
       window.electronAPI.onDownloadProgress((progress: DownloadProgress) => {
         setLogs(prev => [...prev, progress]);
-        
-        // Capture mapping warnings
-        if (progress.type === "warning" && progress.mappingInfo) {
-          setMappingWarnings(progress.mappingInfo);
-        }
       });
     }
 
-    // Cleanup listener on unmount
+    if (window.electronAPI?.onDownloadCompleted) {
+      window.electronAPI.onDownloadCompleted((completionInfo: DownloadCompletionInfo) => {
+        // Set mapping warnings from completion info
+        setMappingWarnings(completionInfo);
+      });
+    }
+
+    // Cleanup listeners on unmount
     return () => {
       if (window.electronAPI?.removeDownloadProgressListener) {
         window.electronAPI.removeDownloadProgressListener();
       }
+      if (window.electronAPI?.removeDownloadCompletedListener) {
+        window.electronAPI.removeDownloadCompletedListener();
+      }
     };
   }, []);
 
-  const handleOpenSettings = () => {
-    setSettingsOpen(true);
-  };
 
   const handleCloseSettings = () => {
     setSettingsOpen(false);
@@ -197,7 +218,9 @@ const P1DoksDownloadPage: React.FC = () => {
       }]);
 
       // Use Electron IPC to communicate with main process
-      const result = await window.electronAPI.downloadSetups(config);
+      // Convert service name to service ID for the download function
+      const serviceId = serviceName.toLowerCase();
+      const result = await (window.electronAPI as any)[downloadFunction](serviceId, config);
       
       if (result.success) {
         // Add completion log
@@ -206,7 +229,6 @@ const P1DoksDownloadPage: React.FC = () => {
           message: "Download completed successfully!",
           timestamp: new Date()
         }]);
-
 
         setMessage({
           type: "success",
@@ -245,7 +267,7 @@ const P1DoksDownloadPage: React.FC = () => {
     console.log("Cancelling download...");
     
     try {
-      const result = await window.electronAPI.cancelDownload();
+      const result = await (window.electronAPI as any)[cancelFunction]();
       
       if (result.success) {
         setLogs(prev => [...prev, {
@@ -291,19 +313,22 @@ const P1DoksDownloadPage: React.FC = () => {
         width: "100%",
       }}
     >
-      {/* P1Doks Download Stepper */}
-      <P1DoksDownloadStepper
+      {/* Download Stepper */}
+      <DownloadStepper
+        serviceName={serviceName}
         onDownload={handleDownload}
         onCancel={handleCancel}
         logs={logs}
         isDownloading={isDownloading}
         showSetupAlert={showSetupAlert}
-        onOpenSettings={handleOpenSettings}
         onReset={handleReset}
         downloadPath={generalSettings.downloadPath}
         mappingWarnings={mappingWarnings}
         onRemoveFromMappingWarnings={removeFromMappingWarnings}
         onIgnoreMapping={ignoreMapping}
+        configFormComponent={ConfigFormComponent}
+        getServiceSettings={getServiceSettings}
+        getMappings={getMappings}
       />
       
       {/* Success/Error Messages */}
@@ -331,4 +356,4 @@ const P1DoksDownloadPage: React.FC = () => {
   );
 };
 
-export default P1DoksDownloadPage;
+export default DownloadPage;

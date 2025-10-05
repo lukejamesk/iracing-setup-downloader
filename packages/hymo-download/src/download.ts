@@ -12,12 +12,12 @@ export const runDownload = async (
   // Launch system Chrome
   let browser;
   try {
-    console.log("Launching system Chrome...");
+    console.log("Launching system Chrome for Hymo download...");
     browser = await chromium.launch({
       headless: config.runHeadless ?? true,
       channel: "chrome", // This tells Playwright to use the system's Chrome
     });
-    console.log("Chrome launched successfully");
+    console.log("Chrome launched successfully for Hymo");
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(

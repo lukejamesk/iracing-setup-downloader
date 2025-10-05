@@ -1,7 +1,7 @@
 import React from "react";
 import {ThemeProvider, createTheme, CssBaseline, Box} from "@mui/material";
 import { MainContent } from "./components/MainContent";
-import { SettingsProvider, P1DoksProvider, ServiceProvider } from "./contexts";
+import { SettingsProvider, P1DoksProvider, HymoProvider, ServiceProvider } from "./contexts";
 import { useSettings } from "./contexts/SettingsContext";
 import "./index.css";
 
@@ -163,7 +163,9 @@ const App: React.FC = () => {
     <ServiceProvider>
       <SettingsProvider>
         <P1DoksProvider>
-          <AppContent />
+          <HymoProvider>
+            <AppContent />
+          </HymoProvider>
         </P1DoksProvider>
       </SettingsProvider>
     </ServiceProvider>

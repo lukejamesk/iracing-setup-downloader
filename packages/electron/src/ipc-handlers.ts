@@ -1,5 +1,6 @@
 import {ipcMain, dialog, BrowserWindow, shell} from "electron";
-import {runDownload, Config, DownloadProgress} from "@iracing-setup-downloader/p1doks-download";
+import {runDownload as runP1DoksDownload, Config as P1DoksConfig, DownloadProgress, DownloadCompletionInfo} from "@iracing-setup-downloader/p1doks-download";
+import {runDownload as runHymoDownload, Config as HymoConfig} from "@iracing-setup-downloader/hymo-download";
 import {Browser} from "playwright-core";
 import * as fs from "fs";
 import * as path from "path";
@@ -19,7 +20,7 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
   ipcMain.removeAllListeners("rename-folders-for-mapping");
 
   // IPC handler for download functionality
-  ipcMain.handle("download-setups", async (event, config: Config) => {
+  ipcMain.handle("download-setups", async (event, service: string, config: any) => {
     console.log('Received config:', JSON.stringify(config, null, 2));
     
     
@@ -28,11 +29,18 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
     activeDownloads.set(senderId, {controller});
 
     try {
-      await runDownload(
+      // Choose the appropriate download function based on service
+      const runDownloadFunction = service === 'hymo' ? runHymoDownload : runP1DoksDownload;
+      
+      await runDownloadFunction(
         config,
         (progress: DownloadProgress) => {
           // Send progress updates to the renderer
           event.sender.send("download-progress", progress);
+        },
+        (completionInfo: DownloadCompletionInfo) => {
+          // Send completion info with mapping data to the renderer
+          event.sender.send("download-completed", completionInfo);
         },
         controller.signal,
         (browser: Browser) => {
@@ -154,12 +162,13 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
     type: 'car' | 'track';
     oldName: string;
     newName: string;
-    teams: Array<{name: string}>;
+    teams: string[]; // Changed from Array<{name: string}> to string[]
     year: string;
     season: string;
+    service?: string; // Add service parameter
   }) => {
     try {
-      const { downloadPath, type, oldName, newName, teams, year, season } = params;
+      const { downloadPath, type, oldName, newName, teams, year, season, service } = params;
       
       
       if (type === 'car') {
@@ -181,25 +190,21 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
           }
         }
       } else {
-        // For track mappings, we need to loop through each team and car combination
-        // Track structure: {downloadPath}/{car}/{team}/{year} Season {season}/{track}/p1doks
-        
+        // For track mappings, use the same structure for both P1Doks and Hymo
+        // Structure: {downloadPath}/{car}/{team}/{year} Season {season}/{track}/{service}
         for (const team of teams) {
-          
           // Get all car folders in the download path
           const carFolders = fs.readdirSync(downloadPath, { withFileTypes: true })
             .filter(dirent => dirent.isDirectory())
             .map(dirent => dirent.name);
           
-          
           for (const carFolder of carFolders) {
-            const teamSeasonPath = path.join(downloadPath, carFolder, team.name, `${year} Season ${season}`);
+            const teamSeasonPath = path.join(downloadPath, carFolder, team, `${year} Season ${season}`);
             
             if (fs.existsSync(teamSeasonPath)) {
               // Look for the old track folder
               const oldTrackFolder = path.join(teamSeasonPath, oldName);
               const newTrackFolder = path.join(teamSeasonPath, newName);
-              
               
               if (fs.existsSync(oldTrackFolder)) {
                 if (fs.existsSync(newTrackFolder)) {

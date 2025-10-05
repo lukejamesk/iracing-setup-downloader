@@ -1,0 +1,33 @@
+{
+  "name": "@iracing-setup-downloader/hymo-download",
+  "version": "1.0.0",
+  "description": "Hymo setup downloader for iRacing",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist",
+    "test": "npm run build && node dist/test-login.js"
+  },
+  "keywords": [
+    "iracing",
+    "setup",
+    "download",
+    "hymo"
+  ],
+  "author": "Luke King",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "11.3.2",
+    "path": "0.12.7",
+    "playwright": "^1.40.0",
+    "yauzl": "3.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/yauzl": "2.10.3",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.0"
+  }
+}

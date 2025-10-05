@@ -28,17 +28,16 @@ import {
 } from '@mui/icons-material';
 import { useSettings } from '../../contexts';
 import { useFolderPicker } from '../../hooks';
-import { HistoryAutocomplete } from '../common';
 
 const GeneralSettings: React.FC = () => {
-  const { settings, activeTeam, addTeam, updateTeam, removeTeam, setActiveTeam, updateDownloadPath, updateBackgroundImage } = useSettings();
+  const { settings, addTeam, updateTeam, removeTeam, updateDownloadPath, updateBackgroundImage } = useSettings();
   const { selectFolder } = useFolderPicker();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Dialog state
   const [addTeamDialogOpen, setAddTeamDialogOpen] = useState(false);
   const [editTeamDialogOpen, setEditTeamDialogOpen] = useState(false);
-  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [editingTeamName, setEditingTeamName] = useState<string | null>(null);
   const [newTeamName, setNewTeamName] = useState('');
 
   // Team management handlers
@@ -50,28 +49,23 @@ const GeneralSettings: React.FC = () => {
     }
   };
 
-  const handleEditTeam = (teamId: string) => {
-    const team = settings.teams.find(t => t.id === teamId);
-    if (team) {
-      setEditingTeamId(teamId);
-      setNewTeamName(team.name);
-      setEditTeamDialogOpen(true);
-    }
+  const handleEditTeam = (teamName: string) => {
+    setEditingTeamName(teamName);
+    setNewTeamName(teamName);
+    setEditTeamDialogOpen(true);
   };
 
   const handleUpdateTeam = () => {
-    if (editingTeamId && newTeamName.trim()) {
-      updateTeam(editingTeamId, {
-        name: newTeamName.trim(),
-      });
-      setEditingTeamId(null);
+    if (editingTeamName && newTeamName.trim()) {
+      updateTeam(editingTeamName, newTeamName.trim());
+      setEditingTeamName(null);
       setNewTeamName('');
       setEditTeamDialogOpen(false);
     }
   };
 
-  const handleRemoveTeam = (teamId: string) => {
-    removeTeam(teamId);
+  const handleRemoveTeam = (teamName: string) => {
+    removeTeam(teamName);
   };
 
   const handleSelectDownloadPath = async () => {
@@ -145,25 +139,23 @@ const GeneralSettings: React.FC = () => {
           </Typography>
         ) : (
           <List>
-            {settings.teams.map((team, index) => (
-              <React.Fragment key={team.id}>
+            {settings.teams.map((teamName, index) => (
+              <React.Fragment key={teamName}>
                 <ListItem
                   sx={{
-                    backgroundColor: activeTeam?.id === team.id ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                    backgroundColor: 'transparent',
                     borderRadius: 1,
-                    cursor: 'pointer',
                     '&:hover': {
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                     },
                   }}
-                  onClick={() => setActiveTeam(team.id)}
                 >
                   <ListItemText
-                    primary={team.name}
+                    primary={teamName}
                     sx={{
                       '& .MuiListItemText-primary': {
                         color: 'white',
-                        fontWeight: activeTeam?.id === team.id ? 'bold' : 'normal',
+                        fontWeight: 'normal',
                       },
                     }}
                   />
@@ -172,7 +164,7 @@ const GeneralSettings: React.FC = () => {
                       edge="end"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleEditTeam(team.id);
+                        handleEditTeam(teamName);
                       }}
                       sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }}
                     >
@@ -182,7 +174,7 @@ const GeneralSettings: React.FC = () => {
                       edge="end"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleRemoveTeam(team.id);
+                        handleRemoveTeam(teamName);
                       }}
                       sx={{ color: 'rgba(255, 100, 100, 0.8)' }}
                     >

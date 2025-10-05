@@ -27,10 +27,11 @@ export interface DownloadProgress {
   type: "info" | "success" | "error" | "warning";
   message: string;
   timestamp: Date;
-  mappingInfo?: {
-    unmappedCars: string[];
-    unmappedTracks: string[];
-  };
+}
+
+export interface DownloadCompletionInfo {
+  unmappedCars: string[];
+  unmappedTracks: string[];
 }
 
 // Helper function to check if operation was cancelled
@@ -63,6 +64,7 @@ export const downloadSetups = async (
   page: Page,
   config: Config,
   onProgress?: (progress: DownloadProgress) => void,
+  onCompleted?: (completionInfo: DownloadCompletionInfo) => void,
   signal?: AbortSignal
 ) => {
   // Track unmapped items
@@ -217,10 +219,13 @@ export const downloadSetups = async (
 
       // Download for each selected team
       for (const team of config.selectedTeams) {
+        // Handle both string and Team object formats
+        const teamName = typeof team === 'string' ? team : team.name;
+        
         const folder = path.join(
           config.downloadPath,
           mappedCar,
-          team.name,
+          teamName,
           `${config.year} Season ${config.season}`,
           mappedTrack,
           "p1doks"
@@ -231,7 +236,7 @@ export const downloadSetups = async (
 
         onProgress?.({
           type: "success",
-          message: `Saved to ${team.name}: ${filename}`,
+          message: `Saved to ${teamName}: ${filename}`,
           timestamp: new Date(),
         });
       }
@@ -265,18 +270,11 @@ export const downloadSetups = async (
 
     // Final cancellation check
     if (!signal?.aborted) {
-      // Report unmapped items if any
-      if (unmappedCars.size > 0 || unmappedTracks.size > 0) {
-        onProgress?.({
-          type: "warning",
-          message: `Found ${unmappedCars.size} unmapped cars and ${unmappedTracks.size} unmapped tracks`,
-          timestamp: new Date(),
-          mappingInfo: {
-            unmappedCars: Array.from(unmappedCars),
-            unmappedTracks: Array.from(unmappedTracks),
-          },
-        });
-      }
+      // Call onCompleted with mapping info
+      onCompleted?.({
+        unmappedCars: Array.from(unmappedCars),
+        unmappedTracks: Array.from(unmappedTracks),
+      });
 
       onProgress?.({
         type: "success",

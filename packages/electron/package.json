@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@iracing-setup-downloader/p1doks-download": "*",
+    "@iracing-setup-downloader/hymo-download": "*",
     "playwright-core": "^1.54.2"
   },
   "devDependencies": {

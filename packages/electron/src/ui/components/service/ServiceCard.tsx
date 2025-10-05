@@ -12,7 +12,6 @@ interface ServiceCardProps {
   description: string;
   logoUrl?: string;
   onClick: () => void;
-  isAvailable?: boolean;
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({
@@ -20,25 +19,23 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   description,
   logoUrl,
   onClick,
-  isAvailable = true,
 }) => {
   return (
     <Card
-      onClick={isAvailable ? onClick : undefined}
+      onClick={onClick}
       sx={{
         width: 300,
         height: 200,
-        cursor: isAvailable ? 'pointer' : 'not-allowed',
+        cursor: 'pointer',
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
         backdropFilter: 'blur(10px)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         transition: 'all 0.3s ease',
-        opacity: isAvailable ? 1 : 0.5,
-        '&:hover': isAvailable ? {
+        '&:hover': {
           transform: 'translateY(-5px)',
           boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
           border: '1px solid rgba(255, 255, 255, 0.3)',
-        } : {},
+        },
       }}
     >
       <CardMedia

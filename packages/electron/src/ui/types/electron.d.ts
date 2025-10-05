@@ -4,10 +4,11 @@ interface DownloadProgress {
   type: "info" | "success" | "error" | "warning";
   message: string;
   timestamp: Date;
-  mappingInfo?: {
-    unmappedCars: string[];
-    unmappedTracks: string[];
-  };
+}
+
+interface DownloadCompletionInfo {
+  unmappedCars: string[];
+  unmappedTracks: string[];
 }
 
 interface DownloadResult {
@@ -39,6 +40,8 @@ interface ElectronAPI {
   }) => Promise<{success: boolean; error?: string}>;
   onDownloadProgress: (callback: (progress: DownloadProgress) => void) => void;
   removeDownloadProgressListener: () => void;
+  onDownloadCompleted: (callback: (completionInfo: DownloadCompletionInfo) => void) => void;
+  removeDownloadCompletedListener: () => void;
 }
 
 declare global {

@@ -15,13 +15,14 @@ import {
 } from '@mui/icons-material';
 import P1DoksSettings from './P1DoksSettings';
 import GeneralSettings from './GeneralSettings';
+import HymoSettings from './HymoSettings';
 
 interface SettingsDrawerProps {
   open: boolean;
   onClose: () => void;
 }
 
-type SettingsSection = 'general' | 'p1doks';
+type SettingsSection = 'general' | 'p1doks' | 'hymo';
 
 const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ 
   open, 
@@ -32,6 +33,7 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   const menuItems = [
     { id: 'general' as SettingsSection, label: 'General' },
     { id: 'p1doks' as SettingsSection, label: 'P1Doks' },
+    { id: 'hymo' as SettingsSection, label: 'Hymo' },
   ];
 
   const renderContent = () => {
@@ -40,6 +42,8 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                return <GeneralSettings />;
              case 'p1doks':
                return <P1DoksSettings />;
+             case 'hymo':
+               return <HymoSettings />;
       default:
         return (
           <Typography variant="body1" sx={{ color: 'white', opacity: 0.7 }}>
