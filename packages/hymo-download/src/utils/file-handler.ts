@@ -211,14 +211,30 @@ export class FileHandler {
     console.log(`📁 Setup name: ${setupInfo.setupName}`);
     
     const organizedPaths: string[] = [];
-    
+
+    // If year or season are not in config, try to extract from .sto filenames
+    // Hymo filenames follow the pattern: HYMO_GTEsprint_26S1_RSRGTE_LeMans_EQ.sto
+    // where "26S1" means 2026 Season 1
+    let fileYear = config?.year || '';
+    let fileSeason = config?.season || '';
+    if (!fileYear || !fileSeason) {
+      const trackPath = path.join(setupInfo.originalZipPath, setupInfo.track);
+      if (await fs.pathExists(trackPath)) {
+        const parsed = await this.parseYearSeasonFromStoFiles(trackPath);
+        if (!fileYear && parsed.year) fileYear = parsed.year;
+        if (!fileSeason && parsed.season) fileSeason = parsed.season;
+      }
+    }
+
     // Create directory structure for each team: car/teamname/{year} Season {season}/track/hymo/
     for (const teamName of teams) {
+      const yearFolder = fileYear || new Date().getFullYear().toString();
+      const seasonFolder = fileSeason ? `Season ${fileSeason}` : 'All Seasons';
       const organizedPath = path.join(
         basePath,
         setupInfo.car,
         teamName,
-        `${config?.year || '2025'} Season ${config?.season || '4'}`,
+        `${yearFolder} ${seasonFolder}`,
         mappedTrack, // Use mapped track name instead of original
         'hymo'
       );
@@ -271,6 +287,35 @@ export class FileHandler {
   /**
    * Recursively copy all .sto files from source to destination
    */
+  /**
+   * Parse year and season from .sto filenames in a directory.
+   * Hymo filenames contain a pattern like "26S1" meaning 2026 Season 1.
+   */
+  private static async parseYearSeasonFromStoFiles(dirPath: string): Promise<{ year: string; season: string }> {
+    const items = await fs.readdir(dirPath);
+
+    for (const item of items) {
+      const itemPath = path.join(dirPath, item);
+      const stat = await fs.stat(itemPath);
+
+      if (stat.isDirectory()) {
+        const result = await this.parseYearSeasonFromStoFiles(itemPath);
+        if (result.year && result.season) return result;
+      } else if (item.toLowerCase().endsWith('.sto')) {
+        // Match pattern like "26S1", "25S4" — two-digit year + S + season number
+        const match = item.match(/(\d{2})S(\d+)/);
+        if (match) {
+          const year = `20${match[1]}`;
+          const season = match[2];
+          console.log(`📅 Extracted year/season from filename "${item}": ${year} Season ${season}`);
+          return { year, season };
+        }
+      }
+    }
+
+    return { year: '', season: '' };
+  }
+
   private static async copyAllStoFiles(sourcePath: string, destPath: string, teamName: string): Promise<void> {
     const items = await fs.readdir(sourcePath);
     

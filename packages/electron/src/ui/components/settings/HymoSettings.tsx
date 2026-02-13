@@ -7,17 +7,12 @@ import {
   TextField,
 } from '@mui/material';
 import { useHymo } from '../../contexts';
-import MappingSection from './MappingSection';
 
 const HymoSettings: React.FC = () => {
-  const { 
-    settings, 
-    updateLogin, 
-    updatePassword, 
-    addTrackMapping,
-    removeTrackMapping,
-    editTrackMapping,
-    replaceTrackMappings
+  const {
+    settings,
+    updateLogin,
+    updatePassword,
   } = useHymo();
 
   return (
@@ -109,22 +104,6 @@ const HymoSettings: React.FC = () => {
           </Grid>
         </Grid>
       </Paper>
-      {/* Track Mappings Section */}
-      <MappingSection
-        title="Track Mappings"
-        description="Map Hymo track names to iRacing track names for automatic setup downloads"
-        serviceName="Hymo"
-        mappings={settings.trackMappings}
-        onAdd={addTrackMapping}
-        onEdit={editTrackMapping}
-        onRemove={removeTrackMapping}
-        onReplace={replaceTrackMappings}
-        serviceLabel="Hymo Track Name"
-        iracingLabel="iRacing Track Name"
-        servicePlaceholder="e.g., Spa-Francorchamps"
-        iracingPlaceholder="e.g., spa"
-        allowDelete={true}
-      />
     </Box>
   );
 };

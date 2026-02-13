@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Box, Snackbar, Alert } from "@mui/material";
 import { SettingsDrawer } from "../settings";
-import { useSettings } from "../../contexts";
+import { useSettings, useTrackMapping } from "../../contexts";
+import type { TrackMappingService } from "../../contexts/TrackMappingContext";
 import DownloadStepper from "./DownloadStepper";
 
 // Download progress interface for UI
@@ -31,7 +32,7 @@ interface DownloadPageProps {
   checkSettingsValid: (generalSettings: any, serviceSettings: any) => boolean;
   getMappings: (serviceSettings: any) => {
     carMappings: any[];
-    trackMappings: any[];
+    trackMappingsRecord?: Record<string, string>;
   };
   getServiceSettings: () => any;
 }
@@ -47,6 +48,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
   getServiceSettings,
 }) => {
   const { settings: generalSettings } = useSettings();
+  const { getServiceTrackMappings } = useTrackMapping();
   
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -85,35 +87,43 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
   // Effect to handle folder renaming when mappings are updated
   useEffect(() => {
     if (pendingRenames.length > 0 && lastDownloadConfig) {
-      const { carMappings, trackMappings } = getMappings(serviceSettings);
-      
+      const { carMappings } = getMappings(serviceSettings);
+      const service = serviceName.toLowerCase() as TrackMappingService;
+      const trackRecord = getServiceTrackMappings(service);
+
       pendingRenames.forEach(async ({ type, itemName }) => {
         try {
-          const mappings = type === 'car' ? carMappings : trackMappings;
-          const mapping = mappings.find(m => m.p1doks === itemName);
-          
-          if (mapping) {
+          let newName: string | undefined;
+
+          if (type === 'car') {
+            const mapping = carMappings.find(m => m.p1doks === itemName);
+            newName = mapping?.iracing;
+          } else {
+            newName = trackRecord[itemName];
+          }
+
+          if (newName) {
             const renameParams = {
               downloadPath: lastDownloadConfig.downloadPath,
               type: type,
               oldName: itemName,
-              newName: mapping.iracing,
+              newName: newName,
               teams: lastDownloadConfig.teams,
               year: lastDownloadConfig.year,
               season: lastDownloadConfig.season,
-              service: serviceName, // Add service name for folder structure handling
+              service: serviceName,
             };
-            
+
             await window.electronAPI.renameFoldersForMapping(renameParams);
           }
         } catch (error) {
           console.error(`Error during folder rename:`, error);
         }
       });
-      
+
       setPendingRenames([]);
     }
-  }, [serviceSettings, pendingRenames, lastDownloadConfig, getMappings]);
+  }, [serviceSettings, pendingRenames, lastDownloadConfig, getMappings, getServiceTrackMappings, serviceName]);
 
   // Function to remove an item from mapping warnings and rename folders
   const removeFromMappingWarnings = async (type: 'car' | 'track', itemName: string) => {

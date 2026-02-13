@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Paper,
@@ -9,6 +9,7 @@ import {
   Typography,
   Button,
   Alert,
+  Collapse,
 } from "@mui/material";
 import {
   Settings as SettingsIcon,
@@ -16,6 +17,7 @@ import {
   Cancel as CancelIcon,
   CheckCircle as CheckIcon,
   Error as ErrorIcon,
+  Warning as WarningIcon,
   FolderOpen as FolderOpenIcon,
 } from "@mui/icons-material";
 import { DownloadLog, MappingWarningsAlert } from "../common";
@@ -59,7 +61,7 @@ interface DownloadStepperProps {
   getServiceSettings: () => any;
   getMappings: (settings: any) => {
     carMappings?: any[];
-    trackMappings?: any[];
+    trackMappingsRecord?: Record<string, string>;
   };
 }
 
@@ -80,22 +82,24 @@ const DownloadStepper: React.FC<DownloadStepperProps> = ({
   getMappings,
 }) => {
   const { settings: generalSettings } = useSettings();
+  const [showErrorDetails, setShowErrorDetails] = useState(false);
+
+  // Compute error information from logs
+  const errorLogs = logs.filter(log => log.type === "error");
+  const hasErrors = errorLogs.length > 0;
+  const hasCompleted = logs.some(log => log.type === "success" && log.message.includes("completed"));
 
   // Determine current step based on state
   const getCurrentStep = () => {
     if (showSetupAlert) return 0; // Configuration step
     if (isDownloading) return 1; // Download step
-    
-    // Check if there are any errors in the logs
-    const hasErrors = logs.some(log => log.type === "error");
-    const hasCompleted = logs.some(log => log.type === "success" && log.message.includes("completed"));
-    
-    // Only go to complete step if there are no errors and download completed successfully
-    if (hasCompleted && !hasErrors) return 2; // Completed step
-    
-    // If there are errors, stay on download step (step 1) to show the error
-    if (hasErrors && !isDownloading) return 1; // Error step (but still step 1)
-    
+
+    // Show completion step if download completed, even with some errors (partial success)
+    if (hasCompleted) return 2;
+
+    // If there are errors but no completion, stay on download step (step 1)
+    if (hasErrors && !isDownloading) return 1;
+
     return 0; // Default to configuration
   };
 
@@ -164,15 +168,9 @@ const DownloadStepper: React.FC<DownloadStepperProps> = ({
                       return acc;
                     }, {} as Record<string, string>)
                   } : {}),
-                  ...(mappings.trackMappings ? {
-                    trackP1DoksToWBR: mappings.trackMappings.reduce((acc, mapping) => {
-                      acc[mapping.p1doks] = mapping.iracing;
-                      return acc;
-                    }, {} as Record<string, string>),
-                    trackHymoToIracing: mappings.trackMappings.reduce((acc, mapping) => {
-                      acc[mapping.p1doks] = mapping.iracing;
-                      return acc;
-                    }, {} as Record<string, string>)
+                  ...(mappings.trackMappingsRecord ? {
+                    trackP1DoksToWBR: mappings.trackMappingsRecord,
+                    trackHymoToIracing: mappings.trackMappingsRecord,
                   } : {}),
                 },
               };
@@ -235,10 +233,54 @@ const DownloadStepper: React.FC<DownloadStepperProps> = ({
       ),
     },
     {
-      label: "Complete",
-      description: "Download process finished",
+      label: hasCompleted && hasErrors ? "Partially Complete" : "Complete",
+      description: hasCompleted && hasErrors
+        ? `Download finished with ${errorLogs.length} error${errorLogs.length !== 1 ? 's' : ''}`
+        : "Download process finished",
       content: (
         <Box>
+          {/* Partial Download Error Summary */}
+          {hasErrors && (
+            <Alert
+              severity="warning"
+              sx={{
+                mb: 2,
+                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                border: '1px solid rgba(255, 152, 0, 0.3)',
+                '& .MuiAlert-message': {
+                  color: 'white',
+                  width: '100%',
+                },
+                '& .MuiAlert-icon': {
+                  color: '#ff9800',
+                },
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                {errorLogs.length} download{errorLogs.length !== 1 ? 's' : ''} failed
+              </Typography>
+              <Typography variant="body2" sx={{ fontSize: '0.875rem', mb: 1 }}>
+                Some setups could not be downloaded. You can still add mappings for the setups that were downloaded successfully.
+              </Typography>
+              <Button
+                size="small"
+                onClick={() => setShowErrorDetails(!showErrorDetails)}
+                sx={{ color: '#ff9800', textTransform: 'none', p: 0, minWidth: 'auto' }}
+              >
+                {showErrorDetails ? 'Hide details' : 'Show details'}
+              </Button>
+              <Collapse in={showErrorDetails}>
+                <Box sx={{ mt: 1, pl: 1, borderLeft: '2px solid rgba(255, 152, 0, 0.3)' }}>
+                  {errorLogs.map((log, i) => (
+                    <Typography key={i} variant="body2" sx={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}>
+                      {log.message}
+                    </Typography>
+                  ))}
+                </Box>
+              </Collapse>
+            </Alert>
+          )}
+
           {/* Mapping Warnings */}
           {mappingWarnings && (mappingWarnings.unmappedCars.length > 0 || mappingWarnings.unmappedTracks.length > 0) && (
             <MappingWarningsAlert
@@ -329,6 +371,10 @@ const DownloadStepper: React.FC<DownloadStepperProps> = ({
               <StepLabel
                 StepIconComponent={({ active, completed, error }) => {
                   if (completed) {
+                    // Show warning icon for the downloading step if there were errors
+                    if (index === 1 && hasErrors) {
+                      return <WarningIcon sx={{ color: '#ff9800' }} />;
+                    }
                     return <CheckIcon sx={{ color: '#4caf50' }} />;
                   }
                   if (error) {

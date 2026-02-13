@@ -4,13 +4,14 @@ import { ServiceSelection } from './service';
 import { DownloadPage, P1DoksDownloadConfigForm, HymoDownloadConfigForm } from './form';
 import { SettingsDrawer } from './settings';
 import { TitleBar } from './common';
-import { useService, useP1Doks, useHymo } from '../contexts';
+import { useService, useP1Doks, useHymo, useTrackMapping } from '../contexts';
 
 const MainContent: React.FC = () => {
   const { selectedService, setSelectedService } = useService();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const p1doksContext = useP1Doks();
   const hymoContext = useHymo();
+  const trackMappingContext = useTrackMapping();
 
   const handleSettingsOpen = () => {
     setSettingsOpen(true);
@@ -39,7 +40,7 @@ const MainContent: React.FC = () => {
           },
           getMappings: (serviceSettings: any) => ({
             carMappings: serviceSettings.carMappings,
-            trackMappings: serviceSettings.trackMappings,
+            trackMappingsRecord: trackMappingContext.getServiceTrackMappings('p1doks'),
           }),
           getServiceSettings: () => p1doksContext.settings,
         };
@@ -48,14 +49,14 @@ const MainContent: React.FC = () => {
           serviceName: 'Hymo',
           serviceSettings: hymoContext.settings,
           configFormComponent: HymoDownloadConfigForm,
-          downloadFunction: 'downloadSetups', // Will need to be updated when Hymo download is implemented
-          cancelFunction: 'cancelDownload', // Will need to be updated when Hymo download is implemented
+          downloadFunction: 'downloadSetups',
+          cancelFunction: 'cancelDownload',
           checkSettingsValid: (_generalSettings: any, serviceSettings: any) => {
             return serviceSettings.login && serviceSettings.password;
           },
-          getMappings: (serviceSettings: any) => ({
-            carMappings: [], // Hymo doesn't have car mappings
-            trackMappings: serviceSettings.trackMappings,
+          getMappings: (_serviceSettings: any) => ({
+            carMappings: [],
+            trackMappingsRecord: trackMappingContext.getServiceTrackMappings('hymo'),
           }),
           getServiceSettings: () => hymoContext.settings,
         };

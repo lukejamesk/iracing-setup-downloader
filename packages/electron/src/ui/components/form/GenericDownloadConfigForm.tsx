@@ -55,9 +55,9 @@ const GenericDownloadConfigForm: React.FC<GenericDownloadConfigFormProps> = ({
         const parsed = JSON.parse(saved);
         return {
           series: parsed.series || '',
-          season: parsed.season || '',
-          week: parsed.week || '',
-          year: parsed.year || new Date().getFullYear().toString(),
+          season: parsed.season ?? '',
+          week: parsed.week ?? '',
+          year: parsed.year ?? '',
           headless: parsed.headless !== undefined ? parsed.headless : true,
         };
       }
@@ -68,7 +68,7 @@ const GenericDownloadConfigForm: React.FC<GenericDownloadConfigFormProps> = ({
       series: '',
       season: '',
       week: '',
-      year: new Date().getFullYear().toString(),
+      year: '',
       headless: true,
     };
   });
@@ -86,9 +86,9 @@ const GenericDownloadConfigForm: React.FC<GenericDownloadConfigFormProps> = ({
     return seriesOptions; // Start with the provided options
   });
 
-  // Form validation
+  // Form validation - all fields are optional (credentials validated by isSettingsValid)
   const isFormValid = () => {
-    return formData.series && formData.season && formData.week && formData.year;
+    return true;
   };
 
   // Input change handler
@@ -145,7 +145,7 @@ const GenericDownloadConfigForm: React.FC<GenericDownloadConfigFormProps> = ({
     try {
       // Only pass the form data - parent will handle settings and mappings
       const formDataOnly: FormData = {
-        series: formData.series,
+        series: formData.series === 'All series' ? '' : formData.series,
         season: formData.season,
         week: formData.week,
         year: formData.year,
@@ -178,20 +178,25 @@ const GenericDownloadConfigForm: React.FC<GenericDownloadConfigFormProps> = ({
               onInputChange={handleSeriesInputChange}
               onBlur={handleSeriesBlur}
               onRemoveFromHistory={handleRemoveFromSeriesHistory}
-              required={true}
-              helperText="Type your own series name or select from history"
+              required={false}
+              helperText="Type your own series name or select from history. Leave empty for all series."
             />
           </Grid>
 
           {/* Season */}
           <Grid size={{xs: 12, sm: 4}}>
-            <FormControl fullWidth required>
-              <InputLabel>Season</InputLabel>
+            <FormControl fullWidth>
+              <InputLabel shrink>Season</InputLabel>
               <Select
                 value={formData.season}
                 onChange={(e) => handleInputChange('season', e.target.value)}
                 label="Season"
+                displayEmpty
+                notched
               >
+                <MenuItem value="">
+                  <em>All</em>
+                </MenuItem>
                 <MenuItem value="1">1</MenuItem>
                 <MenuItem value="2">2</MenuItem>
                 <MenuItem value="3">3</MenuItem>
@@ -202,13 +207,18 @@ const GenericDownloadConfigForm: React.FC<GenericDownloadConfigFormProps> = ({
 
           {/* Week */}
           <Grid size={{xs: 12, sm: 4}}>
-            <FormControl fullWidth required>
-              <InputLabel>Week</InputLabel>
+            <FormControl fullWidth>
+              <InputLabel shrink>Week</InputLabel>
               <Select
                 value={formData.week}
                 onChange={(e) => handleInputChange('week', e.target.value)}
                 label="Week"
+                displayEmpty
+                notched
               >
+                <MenuItem value="">
+                  <em>All</em>
+                </MenuItem>
                 {Array.from({ length: 12 }, (_, i) => (
                   <MenuItem key={i + 1} value={(i + 1).toString()}>
                     {i + 1}
@@ -220,13 +230,18 @@ const GenericDownloadConfigForm: React.FC<GenericDownloadConfigFormProps> = ({
 
           {/* Year */}
           <Grid size={{xs: 12, sm: 4}}>
-            <FormControl fullWidth required>
-              <InputLabel>Year</InputLabel>
+            <FormControl fullWidth>
+              <InputLabel shrink>Year</InputLabel>
               <Select
                 value={formData.year}
                 onChange={(e) => handleInputChange('year', e.target.value)}
                 label="Year"
+                displayEmpty
+                notched
               >
+                <MenuItem value="">
+                  <em>All</em>
+                </MenuItem>
                 {(() => {
                   const currentYear = new Date().getFullYear();
                   const years = [];
@@ -238,7 +253,7 @@ const GenericDownloadConfigForm: React.FC<GenericDownloadConfigFormProps> = ({
                   years.push(currentYear);
                   // Next year
                   years.push(currentYear + 1);
-                  
+
                   return years.map(year => (
                     <MenuItem key={year} value={year.toString()}>
                       {year}

@@ -106,10 +106,14 @@ export const downloadSetups = async (
   checkCancellation(signal);
 
   // TODO: Implement setup search and download using the iRacing setups page
+  const seriesLabel = config.series || 'All series';
+  const seasonLabel = config.season ? `Season ${config.season}` : 'All Seasons';
+  const weekLabel = config.week ? `Week ${config.week}` : 'All Weeks';
+  const yearLabel = config.year || 'All Years';
   const teamsMessage = config.selectedTeams.length > 0 ? ` (Save to teams: ${config.selectedTeams.join(', ')})` : '';
   onProgress?.({
     type: "info",
-    message: `Ready to search for setups: ${config.series} - Season ${config.season}, Week ${config.week}, Year ${config.year}${teamsMessage}`,
+    message: `Ready to search for setups: ${seriesLabel} - ${seasonLabel}, ${weekLabel}, ${yearLabel}${teamsMessage}`,
     timestamp: new Date(),
   });
 
@@ -122,108 +126,139 @@ export const downloadSetups = async (
     // Process all available setup cards
     const cardsToProcess = searchResults.totalCards;
     
-    // Process setup cards sequentially (simple and reliable)
-    console.log(`Processing ${cardsToProcess} setup cards sequentially`);
-    
+    const CONCURRENT_DOWNLOADS = 3;
+    console.log(`Processing ${cardsToProcess} setup cards (${CONCURRENT_DOWNLOADS} concurrent)`);
+
     onProgress?.({
       type: "info",
-      message: `Starting download of ${cardsToProcess} setups`,
+      message: `Starting download of ${cardsToProcess} setups (${CONCURRENT_DOWNLOADS} at a time)`,
       timestamp: new Date(),
     });
-    
-    // Process each setup card one at a time
-    
+
     // Track unmapped tracks for reporting (use the one declared at function level)
     // Hymo doesn't need car mapping, only track mapping
-    
+
+    const activeDownloads: Promise<void>[] = [];
+
     for (let cardIndex = 0; cardIndex < cardsToProcess; cardIndex++) {
-      // Check for cancellation before each setup
       checkCancellation(signal);
-      
+
+      // Get card title lazily
+      let carName = `Setup ${cardIndex + 1}`;
       try {
-        // Get car name from setup card details for better progress reporting
-        const carName = searchResults.cardDetails[cardIndex]?.title || `Setup ${cardIndex + 1}`;
-        console.log(`Processing setup card ${cardIndex + 1}/${searchResults.totalCards}: ${carName}`);
-        
+        const card = searchResults.setupCardList.getSetupCard(cardIndex);
+        const details = await card.getDetails();
+        carName = details.title || carName;
+      } catch {
+        // Use fallback name if card details can't be read
+      }
+
+      onProgress?.({
+        type: "info",
+        message: `Opening ${carName} (${cardIndex + 1}/${cardsToProcess})`,
+        timestamp: new Date(),
+      });
+
+      // Open tab sequentially — must be serialized to pair click with correct tab
+      let newPage: Page;
+      try {
+        newPage = await iRacingSetupsPage.openSetupCardTab(cardIndex);
+      } catch (error) {
         onProgress?.({
-          type: "info",
-          message: `Downloading ${carName} (${cardIndex + 1}/${cardsToProcess})`,
+          type: "error",
+          message: `Failed to open ${carName} (${cardIndex + 1}/${cardsToProcess}): ${error instanceof Error ? error.message : String(error)}`,
           timestamp: new Date(),
         });
-        
-        // Click the setup card, open it in a new tab, and download the setup
-        const downloadResult = await iRacingSetupsPage.clickSetupCardAndDownload(cardIndex, config.downloadPath, config.selectedTeams, config);
-        
-        console.log(`Setup ${cardIndex + 1} downloaded to: ${downloadResult}`);
-        
-        // Extract car and track information from the download result for mapping tracking
-        // The downloadResult contains paths like: "car\team\{year} Season {season}\track\hymo" so we can extract the car and track names
-        if (downloadResult) {
-          const resultPaths = downloadResult.split(', ');
-          for (const resultPath of resultPaths) {
-            const pathParts = resultPath.split(path.sep);
-            // Find the car and track folders - look for the pattern: .../car/team/{year} Season {season}/track/hymo
-            for (let i = 0; i < pathParts.length - 2; i++) {
-              if (pathParts[i + 1] && pathParts[i + 2] === 'hymo') {
-                const mappedTrackName = pathParts[i + 1]; // Track is after the current position, before hymo
-                const carName = pathParts[i - 2]; // Car is 2 levels up from the current position (car/team/season/track/hymo)
-                
-                // We need to find the original track name to report unmapped tracks
-                // The mapped track name is what's in the path, but we need the original for unmapped tracking
-                let originalTrackName = mappedTrackName;
-                let isMapped = false;
-                
-                // Check if this mapped track name corresponds to an original track name
-                if (config.mappings?.trackHymoToIracing) {
-                  // Find the original track name that maps to this mapped track name
-                  for (const [original, mapped] of Object.entries(config.mappings.trackHymoToIracing)) {
-                    if (mapped === mappedTrackName) {
-                      originalTrackName = original;
-                      isMapped = true;
-                      break;
+        continue;
+      }
+
+      // Launch download processing in parallel
+      const taskCarName = carName;
+      const taskCardIndex = cardIndex;
+      const taskPage = newPage;
+
+      const downloadTask = (async () => {
+        try {
+          const downloadResult = await IRacingSetupsPage.downloadFromTab(
+            taskPage, config.downloadPath, config.selectedTeams, config
+          );
+
+          console.log(`Setup ${taskCardIndex + 1} downloaded to: ${downloadResult}`);
+
+          // Extract car and track information from the download result for mapping tracking
+          if (downloadResult) {
+            const resultPaths = downloadResult.split(', ');
+            for (const resultPath of resultPaths) {
+              const pathParts = resultPath.split(path.sep);
+              for (let i = 0; i < pathParts.length - 2; i++) {
+                if (pathParts[i + 1] && pathParts[i + 2] === 'hymo') {
+                  const mappedTrackName = pathParts[i + 1];
+                  const resultCarName = pathParts[i - 2];
+
+                  let originalTrackName = mappedTrackName;
+                  let isMapped = false;
+
+                  if (config.mappings?.trackHymoToIracing) {
+                    for (const [original, mapped] of Object.entries(config.mappings.trackHymoToIracing)) {
+                      if (mapped === mappedTrackName) {
+                        originalTrackName = original;
+                        isMapped = true;
+                        break;
+                      }
                     }
                   }
+
+                  if (!isMapped) {
+                    unmappedTracks.add(originalTrackName);
+                    console.log(`Found unmapped track: ${originalTrackName} (car: ${resultCarName})`);
+                  } else {
+                    console.log(`Found mapped track: ${originalTrackName} -> ${mappedTrackName} (car: ${resultCarName})`);
+                  }
+                  break;
                 }
-                
-                // Add to unmapped tracks if this track doesn't have a mapping defined
-                // If isMapped is false, it means this track name doesn't have a mapping, so it's unmapped
-                if (!isMapped) {
-                  unmappedTracks.add(originalTrackName);
-                  console.log(`Found unmapped track: ${originalTrackName} (car: ${carName})`);
-                } else {
-                  console.log(`Found mapped track: ${originalTrackName} -> ${mappedTrackName} (car: ${carName})`);
-                }
-                break; // Found the car/track pair, move to next result path
               }
             }
           }
+
+          onProgress?.({
+            type: "success",
+            message: `Successfully downloaded ${taskCarName} (${taskCardIndex + 1}/${cardsToProcess})`,
+            timestamp: new Date(),
+          });
+        } catch (error) {
+          console.log(`Error processing setup card ${taskCardIndex + 1}:`, error);
+
+          onProgress?.({
+            type: "error",
+            message: `Failed to download ${taskCarName} (${taskCardIndex + 1}/${cardsToProcess}): ${error instanceof Error ? error.message : String(error)}`,
+            timestamp: new Date(),
+          });
+
+          // Ensure tab is closed on error
+          await taskPage.close().catch(() => {});
         }
-        
-        onProgress?.({
-          type: "success",
-          message: `Successfully downloaded ${carName} (${cardIndex + 1}/${cardsToProcess})`,
-          timestamp: new Date(),
-        });
-        
-      } catch (error) {
-        // Get car name for error reporting (re-declare since it's in the try block scope)
-        const carName = searchResults.cardDetails[cardIndex]?.title || `Setup ${cardIndex + 1}`;
-        console.log(`Error processing setup card ${cardIndex + 1}:`, error);
-        
-        onProgress?.({
-          type: "error",
-          message: `Failed to download ${carName} (${cardIndex + 1}/${searchResults.totalCards}): ${error instanceof Error ? error.message : String(error)}`,
-          timestamp: new Date(),
-        });
+      })();
+
+      activeDownloads.push(downloadTask);
+      // Clean up completed tasks to keep the array from growing
+      downloadTask.then(() => {
+        const idx = activeDownloads.indexOf(downloadTask);
+        if (idx >= 0) activeDownloads.splice(idx, 1);
+      });
+
+      // Wait for a slot if at concurrency limit
+      if (activeDownloads.length >= CONCURRENT_DOWNLOADS) {
+        await Promise.race(activeDownloads);
       }
-      
-      // Small delay between setups to avoid overwhelming the server
-      if (cardIndex < searchResults.totalCards - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+
+      // Small delay between tab opens to avoid overwhelming the server
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
-    
-      console.log(`Completed processing ${searchResults.totalCards} setup cards`);
+
+    // Wait for remaining downloads to finish
+    await Promise.all(activeDownloads);
+
+    console.log(`Completed processing ${searchResults.totalCards} setup cards`);
   }, signal);
 
   // Only show completion message if not cancelled

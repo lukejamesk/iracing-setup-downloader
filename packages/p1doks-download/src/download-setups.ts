@@ -108,15 +108,20 @@ export const downloadSetups = async (
   console.log("END Login");
 
   const filter = {
-    series: config.series,
-    seasons: [config.season],
-    weeks: [config.week],
-    years: [config.year],
+    series: config.series ? [config.series] : [],
+    seasons: config.season ? [config.season] : [],
+    weeks: config.week ? [config.week] : [],
+    years: config.year ? [config.year] : [],
   };
   console.log("BEGIN Filter", filter);
+
+  const seriesLabel = config.series || 'All Series';
+  const seasonLabel = config.season ? `Season ${config.season}` : 'All Seasons';
+  const weekLabel = config.week ? `Week ${config.week}` : 'All Weeks';
+  const yearLabel = config.year || 'All Years';
   onProgress?.({
     type: "info",
-    message: `Applying filters: ${config.series} - Season ${config.season}, Week ${config.week}, ${config.year}`,
+    message: `Applying filters: ${seriesLabel} - ${seasonLabel}, ${weekLabel}, ${yearLabel}`,
     timestamp: new Date(),
   });
   await marketplacePage.selectFilter(filter);
@@ -133,10 +138,29 @@ export const downloadSetups = async (
     timestamp: new Date(),
   });
 
+  // Pre-scan: count total cards across all pages
+  onProgress?.({
+    type: "info",
+    message: "Counting total setups across all pages...",
+    timestamp: new Date(),
+  });
+  checkCancellation(signal);
+
+  const { totalCards: totalSetups, totalPages } = await safePlaywrightOperation(
+    () => marketplacePage.countTotalCards(),
+    signal
+  );
+
+  onProgress?.({
+    type: "info",
+    message: `Found ${totalSetups} setups across ${totalPages} page${totalPages > 1 ? 's' : ''}`,
+    timestamp: new Date(),
+  });
+
   // Process each page individually to maintain page context
-  let totalCards = 0;
+  let completedCards = 0;
   let currentPage = 1;
-  
+
   while (true) {
     // Check for cancellation before processing each page
     if (signal?.aborted) {
@@ -145,18 +169,11 @@ export const downloadSetups = async (
 
     onProgress?.({
       type: "info",
-      message: `Processing page ${currentPage}...`,
+      message: `Processing page ${currentPage} of ${totalPages}...`,
       timestamp: new Date(),
     });
 
     const cards = await marketplacePage.getCards();
-    totalCards += cards.length;
-    
-    onProgress?.({
-      type: "info",
-      message: `Found ${cards.length} setup cards on page ${currentPage}`,
-      timestamp: new Date(),
-    });
 
     for (const card of cards) {
     // Check for cancellation before processing each card
@@ -167,7 +184,7 @@ export const downloadSetups = async (
     const details = await card.getDetails();
     onProgress?.({
       type: "info",
-      message: `Processing: ${details.car} at ${details.track}`,
+      message: `[${completedCards + 1}/${totalSetups}] Processing: ${details.car} at ${details.track}`,
       timestamp: new Date(),
     });
 
@@ -222,11 +239,13 @@ export const downloadSetups = async (
         // Handle both string and Team object formats
         const teamName = typeof team === 'string' ? team : team.name;
         
+        const yearFolder = config.year || details.year || new Date().getFullYear().toString();
+        const seasonFolder = config.season ? `Season ${config.season}` : (details.season || 'All Seasons');
         const folder = path.join(
           config.downloadPath,
           mappedCar,
           teamName,
-          `${config.year} Season ${config.season}`,
+          `${yearFolder} ${seasonFolder}`,
           mappedTrack,
           "p1doks"
         );
@@ -245,6 +264,13 @@ export const downloadSetups = async (
     }
     await waitFor(500);
     await secondPage.close();
+
+    completedCards++;
+    onProgress?.({
+      type: "success",
+      message: `Completed ${completedCards}/${totalSetups} setups (${details.car} at ${details.track})`,
+      timestamp: new Date(),
+    });
     }
 
     // Check if there's a next page, if not break the loop
@@ -258,8 +284,8 @@ export const downloadSetups = async (
   }
 
   onProgress?.({
-    type: "info",
-    message: `Completed processing all pages. Total cards processed: ${totalCards}`,
+    type: "success",
+    message: `Completed all ${completedCards}/${totalSetups} setups across ${totalPages} page${totalPages > 1 ? 's' : ''}`,
     timestamp: new Date(),
   });
 

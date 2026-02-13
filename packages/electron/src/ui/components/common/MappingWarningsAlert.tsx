@@ -8,11 +8,12 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
-import { MappingModal } from './';
-import { useP1Doks, useHymo } from '../../contexts';
+import { MappingModal, UnifiedTrackMappingModal } from './';
+import { useP1Doks, useTrackMapping } from '../../contexts';
+import type { TrackMappingService } from '../../contexts/TrackMappingContext';
 
 interface MappingWarningsAlertProps {
-  serviceName: string; // Add service name to determine which context to use
+  serviceName: string;
   mappingWarnings: {
     unmappedCars: string[];
     unmappedTracks: string[];
@@ -27,59 +28,56 @@ const MappingWarningsAlert: React.FC<MappingWarningsAlertProps> = ({
   onRemoveFromMappingWarnings,
   onIgnoreMapping,
 }) => {
-  // Use the appropriate context based on service name
   const p1doksContext = useP1Doks();
-  const hymoContext = useHymo();
-  
-  // Get the appropriate mapping functions based on service
-  const getMappingFunctions = () => {
-    if (serviceName.toLowerCase() === 'hymo') {
-      return {
-        addCarMapping: () => {}, // Hymo doesn't have car mappings
-        addTrackMapping: hymoContext.addTrackMapping,
-      };
-    } else {
-      return {
-        addCarMapping: p1doksContext.addCarMapping,
-        addTrackMapping: p1doksContext.addTrackMapping,
-      };
-    }
-  };
-  
-  const { addCarMapping, addTrackMapping } = getMappingFunctions();
-  // Modal state
-  const [addMappingModalOpen, setAddMappingModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'car' | 'track'>('car');
-  const [modalP1doksName, setModalP1doksName] = useState('');
+  const { addMapping, getCanonicalNames } = useTrackMapping();
 
-  // Handle opening the add mapping modal
-  const handleOpenAddMappingModal = (type: 'car' | 'track', p1doksName: string) => {
-    setModalType(type);
-    setModalP1doksName(p1doksName);
-    setAddMappingModalOpen(true);
+  // Car mapping modal state (uses existing MappingModal)
+  const [carModalOpen, setCarModalOpen] = useState(false);
+  const [carModalName, setCarModalName] = useState('');
+
+  // Track mapping modal state (uses UnifiedTrackMappingModal)
+  const [trackModalOpen, setTrackModalOpen] = useState(false);
+  const [trackModalName, setTrackModalName] = useState('');
+
+  // Handle opening car mapping modal
+  const handleOpenCarModal = (carName: string) => {
+    setCarModalName(carName);
+    setCarModalOpen(true);
   };
 
-  // Handle closing the add mapping modal
-  const handleCloseAddMappingModal = () => {
-    setAddMappingModalOpen(false);
-    setModalP1doksName('');
+  const handleCloseCarModal = () => {
+    setCarModalOpen(false);
+    setCarModalName('');
   };
 
-  // Handle mapping saved callback
-  const handleMappingSaved = (serviceName: string, iracingName: string) => {
-    if (modalType === 'car') {
-      addCarMapping(serviceName, iracingName);
-    } else {
-      addTrackMapping(serviceName, iracingName);
-    }
-    onRemoveFromMappingWarnings?.(modalType, serviceName);
+  // Handle car mapping saved
+  const handleCarMappingSaved = (serviceNameVal: string, iracingName: string) => {
+    p1doksContext.addCarMapping(serviceNameVal, iracingName);
+    onRemoveFromMappingWarnings?.('car', serviceNameVal);
+  };
+
+  // Handle opening track mapping modal
+  const handleOpenTrackModal = (trackName: string) => {
+    setTrackModalName(trackName);
+    setTrackModalOpen(true);
+  };
+
+  const handleCloseTrackModal = () => {
+    setTrackModalOpen(false);
+    setTrackModalName('');
+  };
+
+  // Handle track mapping saved
+  const handleTrackMappingSaved = (serviceTrackName: string, canonicalName: string) => {
+    const service = serviceName.toLowerCase() as TrackMappingService;
+    addMapping(canonicalName, service, serviceTrackName);
+    onRemoveFromMappingWarnings?.('track', serviceTrackName);
   };
 
   // Handle ignoring a track (add mapping to itself)
   const handleIgnoreTrack = (trackName: string) => {
-    // Add a mapping from the track name to itself (ignore mapping)
-    addTrackMapping(trackName, trackName);
-    // Use the ignore handler that doesn't trigger folder renaming
+    const service = serviceName.toLowerCase() as TrackMappingService;
+    addMapping(trackName, service, trackName);
     onIgnoreMapping?.('track', trackName);
   };
 
@@ -102,7 +100,7 @@ const MappingWarningsAlert: React.FC<MappingWarningsAlertProps> = ({
         <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
             Mapping Configuration Needed
         </Typography>
-        
+
         {mappingWarnings.unmappedCars.length > 0 && (
           <Box sx={{ mb: 1 }}>
             <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
@@ -120,7 +118,7 @@ const MappingWarningsAlert: React.FC<MappingWarningsAlertProps> = ({
                         <Link
                           component="button"
                           variant="body2"
-                          onClick={() => handleOpenAddMappingModal('car', car)}
+                          onClick={() => handleOpenCarModal(car)}
                           sx={{
                             color: '#2196f3',
                             textDecoration: 'underline',
@@ -141,7 +139,7 @@ const MappingWarningsAlert: React.FC<MappingWarningsAlertProps> = ({
             </List>
           </Box>
         )}
-        
+
         {mappingWarnings.unmappedTracks.length > 0 && (
           <Box sx={{ mb: 1 }}>
             <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
@@ -159,7 +157,7 @@ const MappingWarningsAlert: React.FC<MappingWarningsAlertProps> = ({
                         <Link
                           component="button"
                           variant="body2"
-                          onClick={() => handleOpenAddMappingModal('track', track)}
+                          onClick={() => handleOpenTrackModal(track)}
                           sx={{
                             color: '#2196f3',
                             textDecoration: 'underline',
@@ -197,27 +195,37 @@ const MappingWarningsAlert: React.FC<MappingWarningsAlertProps> = ({
             </List>
           </Box>
         )}
-        
+
         <Typography variant="body2" sx={{ fontSize: '0.875rem', mt: 1, fontStyle: 'italic' }}>
           Add these mappings in Settings to improve folder organization.
         </Typography>
       </Alert>
 
-      {/* Add Mapping Modal */}
+      {/* Car Mapping Modal (existing MappingModal for car mappings) */}
       <MappingModal
-        open={addMappingModalOpen}
-        onClose={handleCloseAddMappingModal}
-        title={`${modalType === 'car' ? 'Car' : 'Track'} Mapping`}
+        open={carModalOpen}
+        onClose={handleCloseCarModal}
+        title="Car Mapping"
         serviceName={serviceName}
-        serviceLabel={`${serviceName} ${modalType === 'car' ? 'Car' : 'Track'} Name`}
-        iracingLabel={`iRacing ${modalType === 'car' ? 'Car' : 'Track'} Name`}
-        servicePlaceholder={modalType === 'car' ? 'e.g., Mercedes-AMG GT3 2020' : 'e.g., Silverstone Circuit'}
-        iracingPlaceholder={modalType === 'car' ? 'e.g., mercedesamgevogt3' : 'e.g., Silverstone Circuit - Grand Prix'}
-        mappings={[]} // Empty for this context
-        editingMapping={modalP1doksName ? { p1doks: modalP1doksName, iracing: '' } : null}
+        serviceLabel={`${serviceName} Car Name`}
+        iracingLabel="iRacing Car Name"
+        servicePlaceholder="e.g., Mercedes-AMG GT3 2020"
+        iracingPlaceholder="e.g., mercedesamgevogt3"
+        mappings={[]}
+        editingMapping={carModalName ? { p1doks: carModalName, iracing: '' } : null}
         editingIndex={undefined}
-        onSave={handleMappingSaved}
-        disableServiceName={!!modalP1doksName} // Disable if we have a pre-filled name from step 3
+        onSave={handleCarMappingSaved}
+        disableServiceName={!!carModalName}
+      />
+
+      {/* Track Mapping Modal (unified modal with Autocomplete) */}
+      <UnifiedTrackMappingModal
+        open={trackModalOpen}
+        onClose={handleCloseTrackModal}
+        serviceName={serviceName}
+        serviceTrackName={trackModalName}
+        canonicalNames={getCanonicalNames()}
+        onSave={handleTrackMappingSaved}
       />
     </>
   );

@@ -6,10 +6,10 @@ export interface Team {
 export type Config = {
   email: string;
   password: string;
-  series: string;
-  season: string;
-  year: string;
-  week: string;
+  series?: string;
+  season?: string;
+  year?: string;
+  week?: string;
   selectedTeams: (Team | string)[];
   downloadPath: string;
   runHeadless?: boolean;

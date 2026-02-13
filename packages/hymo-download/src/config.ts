@@ -1,10 +1,10 @@
 export type Config = {
   login: string;
   password: string;
-  series: string;
-  season: string;
-  year: string;
-  week: string;
+  series?: string;
+  season?: string;
+  year?: string;
+  week?: string;
   selectedTeams: string[];
   downloadPath: string;
   runHeadless?: boolean;

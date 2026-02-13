@@ -57,53 +57,80 @@ export class SetupCardList {
 
   // Method to scroll down and trigger lazy loading
   async scrollToLoadMore(): Promise<void> {
-    console.log('📜 Scrolling to trigger lazy loading...');
-    
-    // Scroll to the bottom of the page
+    // Scroll to the last card element rather than just the page bottom,
+    // which is more reliable for triggering intersection-observer lazy loading
+    const lastCard = this.setupCards.last();
+    if (await lastCard.count() > 0) {
+      await lastCard.scrollIntoViewIfNeeded();
+    } else {
+      await this.page.evaluate(() => {
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+    }
+
+    // Then scroll a bit past to ensure the trigger zone is reached
     await this.page.evaluate(() => {
-      window.scrollTo(0, document.body.scrollHeight);
+      window.scrollBy(0, 500);
     });
-    
-    // Wait a moment for lazy loading to trigger
-    await this.page.waitForTimeout(1000);
   }
 
   // Method to load all setup cards by scrolling until no more load
   async loadAllSetupCards(): Promise<number> {
     console.log('🔄 Loading all setup cards...');
-    
-    let previousCount = 0;
+
     let currentCount = await this.getSetupCardCount();
-    let attempts = 0;
-    const maxAttempts = 10; // Prevent infinite scrolling
-    
+    let staleScrolls = 0;
+    const maxStaleScrolls = 3; // Allow a few scrolls with no new cards before giving up
+    const maxTotalScrolls = 50; // Safety limit
+    let totalScrolls = 0;
+
     console.log(`📊 Initial setup card count: ${currentCount}`);
-    
-    while (currentCount > previousCount && attempts < maxAttempts) {
-      previousCount = currentCount;
-      
+
+    while (staleScrolls < maxStaleScrolls && totalScrolls < maxTotalScrolls) {
+      const previousCount = currentCount;
+
       // Scroll to load more
       await this.scrollToLoadMore();
-      
-      // Wait for new cards to potentially load
-      await this.page.waitForTimeout(2000);
-      
-      // Get new count
-      currentCount = await this.getSetupCardCount();
-      
-      attempts++;
-      
-      if (currentCount > previousCount) {
-        console.log(`📈 Loaded more cards! New count: ${currentCount}`);
+
+      // Wait for new cards to appear (check periodically instead of one fixed wait)
+      let loaded = false;
+      for (let i = 0; i < 5; i++) {
+        await this.page.waitForTimeout(500);
+        currentCount = await this.getSetupCardCount();
+        if (currentCount > previousCount) {
+          loaded = true;
+          break;
+        }
+      }
+
+      // If polling didn't find new cards, also wait for network idle as a fallback
+      if (!loaded) {
+        await this.page.waitForLoadState('networkidle').catch(() => {});
+        currentCount = await this.getSetupCardCount();
+        loaded = currentCount > previousCount;
+      }
+
+      totalScrolls++;
+
+      if (loaded) {
+        staleScrolls = 0; // Reset stale counter on success
+        console.log(`📈 Loaded more cards! New count: ${currentCount} (scroll ${totalScrolls})`);
       } else {
-        console.log(`✅ No more cards to load. Final count: ${currentCount}`);
+        staleScrolls++;
+        console.log(`⏳ No new cards on scroll ${totalScrolls} (stale ${staleScrolls}/${maxStaleScrolls})`);
       }
     }
-    
-    if (attempts >= maxAttempts) {
-      console.log(`⚠️ Reached maximum scroll attempts (${maxAttempts}). Final count: ${currentCount}`);
+
+    if (totalScrolls >= maxTotalScrolls) {
+      console.log(`⚠️ Reached max scroll limit (${maxTotalScrolls}). Final count: ${currentCount}`);
+    } else {
+      console.log(`✅ All cards loaded. Final count: ${currentCount}`);
     }
-    
+
+    // Scroll back to top so card locators are accessible from the start
+    await this.page.evaluate(() => window.scrollTo(0, 0));
+    await this.page.waitForTimeout(500);
+
     return currentCount;
   }
 

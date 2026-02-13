@@ -94,7 +94,9 @@ export class SetupFilter {
   }
 
   // Helper method to create period string from components
-  static createPeriodString(season: string, week: string, year: string): string {
+  // Returns undefined if any component is missing (all three are needed for a valid period filter)
+  static createPeriodString(season?: string, week?: string, year?: string): string | undefined {
+    if (!season || !week || !year) return undefined;
     return `iRacing Season ${season} Week ${week} ${year}`;
   }
 

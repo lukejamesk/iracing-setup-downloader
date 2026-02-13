@@ -197,24 +197,38 @@ export const setupIpcHandlers = (mainWindow: BrowserWindow): void => {
           const carFolders = fs.readdirSync(downloadPath, { withFileTypes: true })
             .filter(dirent => dirent.isDirectory())
             .map(dirent => dirent.name);
-          
+
           for (const carFolder of carFolders) {
-            const teamSeasonPath = path.join(downloadPath, carFolder, team, `${year} Season ${season}`);
-            
-            if (fs.existsSync(teamSeasonPath)) {
-              // Look for the old track folder
-              const oldTrackFolder = path.join(teamSeasonPath, oldName);
-              const newTrackFolder = path.join(teamSeasonPath, newName);
-              
-              if (fs.existsSync(oldTrackFolder)) {
-                if (fs.existsSync(newTrackFolder)) {
-                  // Merge the old track folder contents into the existing new track folder
-                  mergeDirectories(oldTrackFolder, newTrackFolder);
-                  // Remove the old track folder after successful merge
-                  fs.rmSync(oldTrackFolder, { recursive: true, force: true });
-                } else {
-                  // Simply rename if the new track folder doesn't exist
-                  fs.renameSync(oldTrackFolder, newTrackFolder);
+            // Collect the year/season paths to search
+            const teamPath = path.join(downloadPath, carFolder, team);
+            let seasonPaths: string[] = [];
+
+            if (year && season) {
+              // Specific year/season selected — use it directly
+              seasonPaths = [path.join(teamPath, `${year} Season ${season}`)];
+            } else if (fs.existsSync(teamPath)) {
+              // "All" was selected — search all year/season folders under this team
+              seasonPaths = fs.readdirSync(teamPath, { withFileTypes: true })
+                .filter(dirent => dirent.isDirectory())
+                .map(dirent => path.join(teamPath, dirent.name));
+            }
+
+            for (const teamSeasonPath of seasonPaths) {
+              if (fs.existsSync(teamSeasonPath)) {
+                // Look for the old track folder
+                const oldTrackFolder = path.join(teamSeasonPath, oldName);
+                const newTrackFolder = path.join(teamSeasonPath, newName);
+
+                if (fs.existsSync(oldTrackFolder)) {
+                  if (fs.existsSync(newTrackFolder)) {
+                    // Merge the old track folder contents into the existing new track folder
+                    mergeDirectories(oldTrackFolder, newTrackFolder);
+                    // Remove the old track folder after successful merge
+                    fs.rmSync(oldTrackFolder, { recursive: true, force: true });
+                  } else {
+                    // Simply rename if the new track folder doesn't exist
+                    fs.renameSync(oldTrackFolder, newTrackFolder);
+                  }
                 }
               }
             }

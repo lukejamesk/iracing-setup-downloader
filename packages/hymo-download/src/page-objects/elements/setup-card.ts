@@ -3,9 +3,10 @@ import { Locator } from "playwright-core";
 export class SetupCard {
   constructor(private cardLocator: Locator) {}
 
-  // Setup card title/name
+  // Setup card title/name — handles both <div><span><span>Title</span></span></div>
+  // and <div><span>Title</span></div> variants
   get title(): Locator {
-    return this.cardLocator.locator('span span');
+    return this.cardLocator.locator('div[style*="overflow"] span').first();
   }
 
   // Setup card subscription details
@@ -57,7 +58,7 @@ export class SetupCard {
 
   // Click the setup card and open in new tab
   async clickWithNewTab(): Promise<void> {
-    await this.cardLocator.click({ modifiers: ['Control'] });
+    await this.cardLocator.click({ button: 'middle' });
   }
 
   // Check if the card is visible

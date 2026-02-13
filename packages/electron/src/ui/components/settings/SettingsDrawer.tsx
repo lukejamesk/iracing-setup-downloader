@@ -16,22 +16,24 @@ import {
 import P1DoksSettings from './P1DoksSettings';
 import GeneralSettings from './GeneralSettings';
 import HymoSettings from './HymoSettings';
+import TrackMappingsSettings from './TrackMappingsSettings';
 
 interface SettingsDrawerProps {
   open: boolean;
   onClose: () => void;
 }
 
-type SettingsSection = 'general' | 'p1doks' | 'hymo';
+type SettingsSection = 'general' | 'trackMappings' | 'p1doks' | 'hymo';
 
-const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ 
-  open, 
+const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
+  open,
   onClose,
 }) => {
   const [selectedSection, setSelectedSection] = useState<SettingsSection>('general');
 
   const menuItems = [
     { id: 'general' as SettingsSection, label: 'General' },
+    { id: 'trackMappings' as SettingsSection, label: 'Track Mappings' },
     { id: 'p1doks' as SettingsSection, label: 'P1Doks' },
     { id: 'hymo' as SettingsSection, label: 'Hymo' },
   ];
@@ -40,6 +42,8 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
     switch (selectedSection) {
       case 'general':
                return <GeneralSettings />;
+             case 'trackMappings':
+               return <TrackMappingsSettings />;
              case 'p1doks':
                return <P1DoksSettings />;
              case 'hymo':

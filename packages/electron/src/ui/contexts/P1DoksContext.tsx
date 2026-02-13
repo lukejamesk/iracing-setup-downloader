@@ -12,7 +12,6 @@ export interface P1DoksSettings {
   email: string;
   password: string;
   carMappings: Mapping[];
-  trackMappings: Mapping[];
 }
 
 // Define the context interface
@@ -24,10 +23,6 @@ interface P1DoksContextType {
   removeCarMapping: (index: number) => void;
   editCarMapping: (index: number, p1doks: string, iracing: string) => void;
   replaceCarMappings: (mappings: Mapping[]) => void;
-  addTrackMapping: (p1doks: string, iracing: string) => void;
-  removeTrackMapping: (index: number) => void;
-  editTrackMapping: (index: number, p1doks: string, iracing: string) => void;
-  replaceTrackMappings: (mappings: Mapping[]) => void;
   updateSettings: (newSettings: Partial<P1DoksSettings>) => void;
   resetToDefaults: () => void;
 }
@@ -73,10 +68,9 @@ const defaultSettings: P1DoksSettings = {
     { p1doks: "Hyundai Elantra N TCR", iracing: "hyundaielantracn7", isDefault: true },
     { p1doks: "Global Mazda MX-5 Cup", iracing: "mx5 cup", isDefault: true },
     { p1doks: "BMW M2 CS", iracing: "bmwm2csr", isDefault: true },
-    { p1doks: "Porsche Cup 992", iracing: "porsche992cup", isDefault: true },
+    { p1doks: "Porsche Cup 992", iracing: "porsche9922cup", isDefault: true },
     { p1doks: "BMW M Hybrid V8 GTP", iracing: "bmwlmdh", isDefault: true },
   ],
-  trackMappings: [],
 };
 
 // P1Doks provider component
@@ -125,7 +119,6 @@ export const P1DoksProvider: React.FC<P1DoksProviderProps> = ({ children }) => {
                  email: parsedSettings.email || defaultSettings.email,
                  password: parsedSettings.password || defaultSettings.password,
                  carMappings: mergeMappings(parsedSettings.carMappings, defaultSettings.carMappings),
-                 trackMappings: mergeMappings(parsedSettings.trackMappings, defaultSettings.trackMappings),
                };
         
         console.log('P1Doks Context - Loaded settings:', {
@@ -204,46 +197,6 @@ export const P1DoksProvider: React.FC<P1DoksProviderProps> = ({ children }) => {
     }));
   };
 
-  const addTrackMapping = (p1doks: string, iracing: string) => {
-    if (p1doks && iracing) {
-      setSettings(prev => ({
-        ...prev,
-        trackMappings: [...prev.trackMappings, { p1doks, iracing }]
-      }));
-    }
-  };
-
-  const removeTrackMapping = (index: number) => {
-    setSettings(prev => {
-      const mapping = prev.trackMappings[index];
-      // Don't allow deletion of default mappings
-      if (mapping?.isDefault) {
-        return prev;
-      }
-      return {
-        ...prev,
-        trackMappings: prev.trackMappings.filter((_, i) => i !== index)
-      };
-    });
-  };
-
-  const editTrackMapping = (index: number, p1doks: string, iracing: string) => {
-    setSettings(prev => ({
-      ...prev,
-      trackMappings: prev.trackMappings.map((mapping, i) => 
-        i === index ? { ...mapping, p1doks, iracing } : mapping
-      )
-    }));
-  };
-
-  const replaceTrackMappings = (mappings: Mapping[]) => {
-    setSettings(prev => ({
-      ...prev,
-      trackMappings: mappings
-    }));
-  };
-
-
   const updateSettings = (newSettings: Partial<P1DoksSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
@@ -260,10 +213,6 @@ export const P1DoksProvider: React.FC<P1DoksProviderProps> = ({ children }) => {
     removeCarMapping,
     editCarMapping,
     replaceCarMappings,
-    addTrackMapping,
-    removeTrackMapping,
-    editTrackMapping,
-    replaceTrackMappings,
     updateSettings,
     resetToDefaults,
   };

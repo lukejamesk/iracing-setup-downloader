@@ -1,6 +1,6 @@
 import {Locator, Page} from "playwright-core";
 import {LoggedInPage} from "./loggedin-page";
-import {load, waitFor} from "../../util";
+import {waitFor} from "../../util";
 import {SelectorElement} from "../elements";
 import {SetupCardElement} from "../elements/setup-card";
 
@@ -44,6 +44,12 @@ export class MarketplacePage extends LoggedInPage {
       this.page.locator("[role=dialog] [data-slot=popover-trigger]").nth(2)
     );
   }
+  get selectSeriesSelector(): SelectorElement {
+    return new SelectorElement(
+      this.page,
+      this.page.locator("[role=dialog] [data-slot=popover-trigger]").nth(5)
+    );
+  }
 
   get cards(): Locator {
     return this.page.locator(".grid .group");
@@ -83,7 +89,7 @@ export class MarketplacePage extends LoggedInPage {
   }
 
   async selectFilter(filter: {
-    series?: string;
+    series?: string[];
     years?: string[];
     weeks?: string[];
     seasons?: string[];
@@ -91,13 +97,7 @@ export class MarketplacePage extends LoggedInPage {
     await this.clearFiltersButton.click();
     await waitFor(500);
 
-    if (filter.series) {
-      await this.selectSeries(filter.series);
-    }
-
-    await waitFor(500);
     await this.filterButton.click();
-
     await waitFor(500);
 
     await this.selectYearsSelector.select(filter.years || []);
@@ -107,6 +107,9 @@ export class MarketplacePage extends LoggedInPage {
     await waitFor(500);
 
     await this.selectWeeksSelector.select(filter.weeks || []);
+    await waitFor(500);
+
+    await this.selectSeriesSelector.select(filter.series || []);
     await waitFor(500);
 
     await this.applyFilterButton.click();
@@ -197,6 +200,100 @@ export class MarketplacePage extends LoggedInPage {
         }
       }
     }
+  }
+
+  // Get the numbered page buttons from the pagination container, sorted by page number
+  private async getNumberedPageButtons(): Promise<{ number: number; button: Locator }[]> {
+    const paginationContainers = await this.page.locator(".flex.items-center.gap-2").all();
+
+    for (const container of paginationContainers) {
+      const hasPrevious = await container.locator("button:has-text('Previous page')").count() > 0;
+      const hasNext = await container.locator("button:has-text('Next page')").count() > 0;
+
+      if (hasPrevious && hasNext) {
+        const buttons = await container.locator("button").all();
+        const numbered: { number: number; button: Locator }[] = [];
+
+        for (const button of buttons) {
+          const text = await button.textContent();
+          if (text && /^\d+$/.test(text.trim())) {
+            numbered.push({ number: parseInt(text.trim(), 10), button });
+          }
+        }
+
+        return numbered.sort((a, b) => a.number - b.number);
+      }
+    }
+
+    return [];
+  }
+
+  // Jump to the last visible page, then keep jumping until Next is disabled
+  async goToLastPage(): Promise<number> {
+    while (true) {
+      if (!(await this.hasNextPage())) {
+        // We're on the last page - get its number from the active button
+        const numbered = await this.getNumberedPageButtons();
+        return numbered.length > 0 ? numbered[numbered.length - 1].number : 1;
+      }
+
+      // Click the highest visible numbered button
+      const numbered = await this.getNumberedPageButtons();
+      if (numbered.length === 0) break;
+
+      const highest = numbered[numbered.length - 1];
+      await highest.button.click();
+      await waitFor(1000);
+    }
+
+    return 1;
+  }
+
+  // Jump to page 1 by clicking the lowest visible numbered button repeatedly
+  async goToFirstPage(): Promise<void> {
+    while (true) {
+      const numbered = await this.getNumberedPageButtons();
+      if (numbered.length === 0) break;
+
+      const lowest = numbered[0];
+      if (lowest.number === 1) {
+        // Page 1 is visible but might not be active - click it if we're not already on it
+        const isActive = await lowest.button.evaluate(
+          (el) => el.classList.contains('bg-blue-500')
+        );
+        if (!isActive) {
+          await lowest.button.click();
+          await waitFor(1000);
+        }
+        break;
+      }
+
+      // Click the lowest visible page to shift the window back
+      await lowest.button.click();
+      await waitFor(1000);
+    }
+  }
+
+  async countTotalCards(): Promise<{ totalCards: number; totalPages: number }> {
+    // Count cards on the first page
+    const firstPageCards = (await this.cards.all()).length;
+
+    if (!(await this.hasNextPage())) {
+      // Only one page
+      return { totalCards: firstPageCards, totalPages: 1 };
+    }
+
+    // Jump to the last page to find total pages and last page card count
+    const totalPages = await this.goToLastPage();
+    const lastPageCards = (await this.cards.all()).length;
+
+    // Total = (totalPages - 1) * firstPageCards + lastPageCards
+    const totalCards = (totalPages - 1) * firstPageCards + lastPageCards;
+
+    // Navigate back to page 1
+    await this.goToFirstPage();
+
+    return { totalCards, totalPages };
   }
 
   async getAllCards(): Promise<SetupCardElement[]> {

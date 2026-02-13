@@ -33,7 +33,7 @@ export const DEFAULT_CAR_MAPPINGS = {
   "Hyundai Elantra N TCR": "hyundaielantracn7",
   "Global Mazda MX-5 Cup": "mx5 cup",
   "BMW M2 CS": "bmwm2csr",
-  "Porsche Cup 992": "porsche992cup",
+  "Porsche Cup 992": "porsche9922cup",
   "BMW M Hybrid V8 GTP": "bmwlmdh",
 };
 

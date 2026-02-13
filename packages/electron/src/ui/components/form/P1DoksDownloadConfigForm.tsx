@@ -20,36 +20,30 @@ const P1DoksDownloadConfigForm: React.FC<P1DoksDownloadConfigFormProps> = ({
   onDownload,
   onCancel,
   seriesOptions = [
-    "All Setups",
-    "Algarve 1000",
-    "Creventic",
+    "All series",
+    "Daytona 24h",
     "F3",
     "F4",
     "Falken Sports Car",
     "Ferrari Challenge",
     "Global Mazda Mx5",
-    "GTE Sprint",
     "GT3 Fixed",
     "GT Sprint",
+    "GTE Sprint",
     "IMSA",
-    "Indy 6 Hour",
     "Indycar",
-    "Majors24",
+    "Indy NXT Road - fixed",
     "NASCAR Open A NextGen",
     "NASCAR Open B Xfinity",
-    "NASCAR Open C Trucks",
+    "NASCAR  Open C Trucks",
     "Nurburgring Endurance Challenge",
-    "Nürburgring 24h",
-    "Petit Le Mans",
     "Porsche Cup",
     "Production Car Challenge",
     "Prototype Challenge",
-    "Spa 24h",
     "Super Formula",
     "Super Formula Lights",
     "TCR Virtual Challenge",
-    "Watkins Glen 6 Hour"
-  ], // Default P1Doks series options
+  ], // Default P1Doks series options (from P1Doks filter drawer)
 }) => {
   const { settings: p1doksSettings } = useP1Doks();
 

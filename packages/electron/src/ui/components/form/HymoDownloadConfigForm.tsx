@@ -20,6 +20,7 @@ const HymoDownloadConfigForm: React.FC<HymoDownloadConfigFormProps> = ({
   onDownload,
   onCancel,
   seriesOptions = [
+    "All series",
     "2025 INDY 500",
     "Creventic Endurance Series",
     "Falken Tyre Sports Car Challenge",
@@ -39,7 +40,7 @@ const HymoDownloadConfigForm: React.FC<HymoDownloadConfigFormProps> = ({
     "Portimao 1000",
     "Production Car Challenge",
     "TCR Virtual Challenge",
-  ], // Default Hymo series options
+  ], // Default Hymo series options (from TrackTitan series filter)
 }) => {
   const { settings: hymoSettings } = useHymo();
 

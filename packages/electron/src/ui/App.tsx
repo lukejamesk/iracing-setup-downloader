@@ -1,7 +1,7 @@
 import React from "react";
 import {ThemeProvider, createTheme, CssBaseline, Box} from "@mui/material";
 import { MainContent } from "./components/MainContent";
-import { SettingsProvider, P1DoksProvider, HymoProvider, ServiceProvider } from "./contexts";
+import { SettingsProvider, P1DoksProvider, HymoProvider, ServiceProvider, TrackMappingProvider } from "./contexts";
 import { useSettings } from "./contexts/SettingsContext";
 import "./index.css";
 
@@ -162,11 +162,13 @@ const App: React.FC = () => {
   return (
     <ServiceProvider>
       <SettingsProvider>
-        <P1DoksProvider>
-          <HymoProvider>
-            <AppContent />
-          </HymoProvider>
-        </P1DoksProvider>
+        <TrackMappingProvider>
+          <P1DoksProvider>
+            <HymoProvider>
+              <AppContent />
+            </HymoProvider>
+          </P1DoksProvider>
+        </TrackMappingProvider>
       </SettingsProvider>
     </ServiceProvider>
   );

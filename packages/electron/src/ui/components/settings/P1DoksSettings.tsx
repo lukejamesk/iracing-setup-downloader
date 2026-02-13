@@ -10,18 +10,14 @@ import { useP1Doks } from '../../contexts';
 import MappingSection from './MappingSection';
 
 const P1DoksSettings: React.FC = () => {
-  const { 
-    settings, 
-    updateEmail, 
-    updatePassword, 
-    addCarMapping, 
+  const {
+    settings,
+    updateEmail,
+    updatePassword,
+    addCarMapping,
     removeCarMapping,
     editCarMapping,
     replaceCarMappings,
-    addTrackMapping,
-    removeTrackMapping,
-    editTrackMapping,
-    replaceTrackMappings
   } = useP1Doks();
 
   return (
@@ -135,22 +131,6 @@ const P1DoksSettings: React.FC = () => {
         servicePlaceholder="e.g., Mercedes-AMG GT3 2020"
         iracingPlaceholder="e.g., mercedesamgevogt3"
         allowDelete={false}
-      />
-
-      {/* Track Mappings Section */}
-      <MappingSection
-        title="Track Mappings"
-        description="Map P1Doks track names to setup folder track names"
-        serviceName="P1Doks"
-        mappings={settings.trackMappings}
-        onAdd={addTrackMapping}
-        onEdit={editTrackMapping}
-        onRemove={removeTrackMapping}
-        onReplace={replaceTrackMappings}
-        serviceLabel="P1Doks Track Name"
-        iracingLabel="Setup Track Name"
-        servicePlaceholder="e.g., Silverstone Circuit"
-        iracingPlaceholder="e.g., Silverstone Circuit - Grand Prix"
       />
 
     </Box>

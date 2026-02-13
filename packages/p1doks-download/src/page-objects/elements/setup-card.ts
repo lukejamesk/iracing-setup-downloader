@@ -48,10 +48,26 @@ export class SetupCardElement {
     return (await this.wrapper.locator("h3").textContent()) || "";
   }
 
+  async getYear(): Promise<string> {
+    // Search card text elements for a 4-digit year
+    const elements = this.wrapper.locator(".text-muted-foreground");
+    const count = await elements.count();
+
+    for (let i = 0; i < count; i++) {
+      const text = (await elements.nth(i).textContent()) || "";
+      const yearMatch = text.match(/\b(20\d{2})\b/);
+      if (yearMatch) {
+        return yearMatch[1];
+      }
+    }
+    return "";
+  }
+
   async getDetails(): Promise<{
     track: string;
     week: string;
     season: string;
+    year: string;
     car: string;
     url: string;
   }> {
@@ -59,6 +75,7 @@ export class SetupCardElement {
       track: await this.getTrack(),
       week: await this.getWeek(),
       season: await this.getSeason(),
+      year: await this.getYear(),
       car: await this.getCar(),
       url: await this.getUrl(),
     };
